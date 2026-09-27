@@ -7,9 +7,9 @@ sources:
     source_type: "rss"
     permitted_method: "rss_fetch"
     polling_frequency_minutes: 360
-    active: true
-    reliability_score: 0.95
-    notes: "General enterprise technology and industrial policy reporting."
+    active: false
+    reliability_score: 0.0
+    notes: "Deactivated: endpoint returned 404."
 
   - id: hacker_news_rss
     name: "Hacker News Frontpage RSS"
