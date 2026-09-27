@@ -1,0 +1,132 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DevelopmentCard from '../components/DevelopmentCard.jsx';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Load latest local report JSON if available
+let reportData = null;
+try {
+  const generatedDir = path.resolve('../reports/generated');
+  if (fs.existsSync(generatedDir)) {
+    const files = fs.readdirSync(generatedDir).filter(f => f.endsWith('.json')).sort().reverse();
+    if (files.length > 0) {
+      const content = fs.readFileSync(path.join(generatedDir, files[0]), 'utf-8');
+      reportData = JSON.parse(content);
+    }
+  }
+} catch (e) {
+  console.warn("Could not load local report data:", e);
+}
+
+// Fallback sample data if no report generated yet
+if (!reportData) {
+  reportData = {
+    domain_name: "Manufacturing",
+    report_date: "2026-09-28",
+    executive_summary: "Today's manufacturing intelligence brief highlights coordinated federal robotics grants, factory automation upgrades, and supply chain logistics resilience.",
+    article_count: 104,
+    developments: [
+      {
+        headline: "Standards & Governance: NIST Awards $30 Million for MEP Centers",
+        topic_label: "Standards & Governance",
+        what_changed: "NIST announces major grant funding to accelerate advanced technology adoption across regional manufacturing centers.",
+        why_it_matters: "Provides critical infrastructure and subsidy capital to modernize domestic small and mid-sized fabrication facilities.",
+        what_to_watch: "Application deadlines and initial center grant rollouts over the coming 30 days.",
+        relevance_score: 0.95,
+        sources: [
+          {
+            article_id: "nist_01",
+            source_name: "NIST",
+            title: "NIST MEP Award Announcement",
+            url: "https://www.nist.gov/news-events/news/rss.xml"
+          }
+        ]
+      }
+    ],
+    what_to_watch_next: [
+      "Quarterly robotics shipments benchmark report release.",
+      "Federal cybersecurity compliance window for defense manufacturers.",
+      "Port throughput indicators across major maritime shipping lanes."
+    ]
+  };
+}
+---
+
+<Layout title={`SignalBrief | ${reportData.domain_name} Intelligence`} domain={reportData.domain_name}>
+  <div class="space-y-8">
+    <!-- Top Stats Banner -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-sky-950/60 via-slate-900 to-indigo-950/40 border border-sky-800/40">
+      <div>
+        <div class="flex items-center space-x-2 text-xs text-sky-400 font-semibold uppercase tracking-wider mb-1">
+          <span>{reportData.report_date}</span>
+          <span>•</span>
+          <span>Daily Intelligence Brief</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white">
+          {reportData.domain_name} Executive Brief
+        </h1>
+        <p class="text-sm text-slate-300 mt-1 max-w-2xl">
+          Know what changed. Understand why it matters. See what to watch next.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+          <span class="block text-xl font-bold text-sky-400">{reportData.article_count || 104}</span>
+          <span class="text-[11px] text-slate-400 uppercase font-medium">Articles Tracked</span>
+        </div>
+        <div class="px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
+          <span class="block text-xl font-bold text-indigo-400">{reportData.developments.length}</span>
+          <span class="text-[11px] text-slate-400 uppercase font-medium">Key Developments</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <section class="bg-slate-900/80 border border-slate-800 rounded-xl p-6">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-400 mb-2 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+        Executive Takeaway
+      </h2>
+      <p class="text-base text-slate-200 leading-relaxed font-normal">
+        {reportData.executive_summary}
+      </p>
+    </section>
+
+    <!-- Key Developments Grid -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <span>Top Industrial Developments</span>
+          <span class="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+            Ranked by Relevance & Recency
+          </span>
+        </h2>
+      </div>
+
+      <div class="space-y-4">
+        {reportData.developments.map((dev: any) => (
+          <DevelopmentCard client:load development={dev} />
+        ))}
+      </div>
+    </section>
+
+    <!-- Horizon & What To Watch -->
+    {reportData.what_to_watch_next && reportData.what_to_watch_next.length > 0 && (
+      <section class="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+        <h2 class="text-base font-bold text-amber-300 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <span>🔭</span> Horizon & Upcoming Triggers
+        </h2>
+        <ul class="space-y-2 text-sm text-slate-300">
+          {reportData.what_to_watch_next.map((item: string) => (
+            <li class="flex items-start gap-2">
+              <span class="text-amber-400 font-bold">•</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </div>
+</Layout>

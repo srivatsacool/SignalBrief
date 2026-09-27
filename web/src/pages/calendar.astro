@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CalendarView from '../components/CalendarView.jsx';
+import fs from 'node:fs';
+import path from 'node:path';
+
+let reportsList: any[] = [];
+try {
+  const generatedDir = path.resolve('../reports/generated');
+  if (fs.existsSync(generatedDir)) {
+    const files = fs.readdirSync(generatedDir).filter(f => f.endsWith('.json')).sort().reverse();
+    reportsList = files.map(file => {
+      const content = fs.readFileSync(path.join(generatedDir, file), 'utf-8');
+      return JSON.parse(content);
+    });
+  }
+} catch (e) {
+  console.warn("Could not read historical reports:", e);
+}
+
+if (reportsList.length === 0) {
+  reportsList = [
+    {
+      id: "report_20260928_manufacturing",
+      domain_id: "manufacturing",
+      report_date: "2026-09-28",
+      headline: "Daily Manufacturing Intelligence Brief",
+      executive_summary: "Automated analysis of industrial AI deployment, robotics expansion, and federal standards across verified public sources.",
+      article_count: 104,
+      developments: []
+    }
+  ];
+}
+---
+
+<Layout title="SignalBrief | Intelligence Calendar" domain="Manufacturing">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-extrabold text-white">Intelligence Calendar</h1>
+      <p class="text-sm text-slate-400 mt-1">
+        Browse and review historical daily intelligence briefings and developments.
+      </p>
+    </div>
+
+    <CalendarView client:load reports={reportsList} />
+  </div>
+</Layout>

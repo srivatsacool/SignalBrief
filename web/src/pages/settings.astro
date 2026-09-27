@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SettingsForm from '../components/SettingsForm.jsx';
+---
+
+<Layout title="SignalBrief | Settings & Preferences" domain="Manufacturing">
+  <div class="max-w-2xl mx-auto space-y-6">
+    <div>
+      <h1 class="text-2xl font-extrabold text-white">Settings & Preferences</h1>
+      <p class="text-sm text-slate-400 mt-1">
+        Manage your delivery schedule, keyword weights, and notification channels.
+      </p>
+    </div>
+
+    <SettingsForm client:load />
+
+    <!-- Quota & Subscription Status -->
+    <div class="p-5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 space-y-2">
+      <h3 class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Free-Tier Subscriber Quota</h3>
+      <p>
+        SignalBrief is currently operating under the 10-subscriber initial pilot allowance. 
+        Your account is registered as one of the 10 invited readers. 
+        All analytics, summaries, and daily emails are delivered at zero cost.
+      </p>
+      <div class="flex items-center gap-2 pt-2 text-slate-500">
+        <span>Delivery: Daily at 06:00 UTC</span>
+        <span>•</span>
+        <span>Format: Responsive HTML & Mobile Plaintext</span>
+      </div>
+    </div>
+  </div>
+</Layout>
