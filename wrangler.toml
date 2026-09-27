@@ -1,0 +1,39 @@
+name = "signalbrief-worker"
+main = "workers/scheduler/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Scheduled Cron Trigger - Daily execution at 02:00 UTC
+[triggers]
+crons = ["0 2 * * *"]
+
+# Relational Database binding (Cloudflare D1)
+[[d1_databases]]
+binding = "DB"
+database_name = "signalbrief-d1"
+database_id = "signalbrief-d1-placeholder-id"
+migrations_dir = "migrations"
+
+# Object Storage binding for Archived HTML Reports (Cloudflare R2)
+[[r2_buckets]]
+binding = "REPORTS_BUCKET"
+bucket_name = "signalbrief-reports"
+
+# Asynchronous Task Queue for article collection & processing
+[[queues.producers]]
+binding = "PIPELINE_QUEUE"
+queue = "signalbrief-pipeline-queue"
+
+[[queues.consumers]]
+queue = "signalbrief-pipeline-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "signalbrief-dlq"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+DEFAULT_DOMAIN = "manufacturing"
+REPORT_RECIPIENT_LIMIT = 10
+LOG_LEVEL = "INFO"

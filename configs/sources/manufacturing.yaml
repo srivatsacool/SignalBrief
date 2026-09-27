@@ -1,0 +1,48 @@
+sources:
+  - id: nist_manufacturing
+    name: "NIST Manufacturing News"
+    domain_id: "manufacturing"
+    url: "https://www.nist.gov"
+    feed_url: "https://www.nist.gov/news-events/news/rss.xml"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 360
+    active: true
+    reliability_score: 0.95
+    notes: "US National Institute of Standards and Technology research and manufacturing standards updates."
+
+  - id: manufacturing_dive
+    name: "Manufacturing Dive"
+    domain_id: "manufacturing"
+    url: "https://www.manufacturingdive.com"
+    feed_url: "https://www.manufacturingdive.com/feeds/news/"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 240
+    active: true
+    reliability_score: 0.90
+    notes: "Industry intelligence on smart factories, supply chain, robotics, and operations."
+
+  - id: industry_week
+    name: "IndustryWeek"
+    domain_id: "manufacturing"
+    url: "https://www.industryweek.com"
+    feed_url: "https://www.industryweek.com/rss/all"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 240
+    active: true
+    reliability_score: 0.88
+    notes: "Leadership and operational strategy in industrial manufacturing."
+
+  - id: manufacturing_net
+    name: "Manufacturing.net"
+    domain_id: "manufacturing"
+    url: "https://www.manufacturing.net"
+    feed_url: "https://www.manufacturing.net/rss"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 360
+    active: true
+    reliability_score: 0.85
+    notes: "Technology and supply news across US and global manufacturers."

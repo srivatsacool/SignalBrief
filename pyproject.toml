@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signalbrief"
+version = "0.1.0"
+description = "Personalized, open-source, AI-powered text analytics and daily intelligence report platform"
+readme = "README.md"
+authors = [{ name = "SignalBrief Contributors" }]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+keywords = ["nlp", "text-analytics", "intelligence-brief", "rss-collector", "topic-clustering", "automated-reporting"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Linguistic",
+]
+
+dependencies = [
+    "pydantic>=2.5.0",
+    "pyyaml>=6.0.1",
+    "python-dotenv>=1.0.0",
+    "feedparser>=6.0.10",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.1.0",
+    "python-dateutil>=2.8.2",
+    "pandas>=2.1.0",
+    "numpy>=1.26.0",
+    "scikit-learn>=1.4.0",
+    "nltk>=3.8.1",
+    "langdetect>=1.0.9",
+    "jinja2>=3.1.2",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+]
+
+[project.optional-dependencies]
+nlp-advanced = [
+    "spacy>=3.7.0",
+    "sentence-transformers>=2.3.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "nbclient>=0.10.0",
+    "nbformat>=5.9.0",
+    "jupyterlab>=4.1.0",
+    "ipykernel>=6.29.0",
+]
+
+[project.scripts]
+signalbrief = "signalbrief.pipeline.daily:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-ra -q --strict-markers"

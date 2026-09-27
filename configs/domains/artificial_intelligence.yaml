@@ -1,0 +1,32 @@
+domain:
+  id: artificial_intelligence
+  name: Artificial Intelligence
+  description: >
+    Monitor research breakthroughs, foundation models,
+    AI regulation, open weights, and enterprise deployment.
+
+  keywords:
+    - foundation models
+    - open weights
+    - LLM evaluation
+    - AI inference
+    - autonomous agents
+    - machine learning safety
+    - AI chips
+    - GPU clusters
+
+  subtopics:
+    - multimodal models
+    - retrieval augmented generation
+    - synthetic data
+    - open source AI
+    - regulatory compliance
+
+  excluded_keywords:
+    - generic crypto promotions
+    - spam press releases
+
+  report:
+    max_developments: 5
+    include_sentiment: true
+    include_trends: true

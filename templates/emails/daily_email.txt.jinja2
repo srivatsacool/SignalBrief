@@ -1,0 +1,29 @@
+SIGNALBRIEF | {{ domain_name | upper }} INTELLIGENCE
+{{ report_date }}
+Know what changed. Understand why it matters. See what to watch next.
+======================================================================
+
+EXECUTIVE SUMMARY:
+{{ executive_summary }}
+
+KEY DEVELOPMENTS:
+{% for item in developments[:4] %}
+----------------------------------------------------------------------
+{{ loop.index }}. {{ item.headline }}
+* What changed: {{ item.what_changed }}
+* Why it matters: {{ item.why_it_matters }}
+* What to watch: {{ item.what_to_watch }}
+Sources:
+{% for cite in item.sources %}
+- [{{ cite.source_name }}] {{ cite.title }}: {{ cite.url }}
+{% endfor %}
+{% endfor %}
+
+VIEW COMPLETE REPORT:
+{{ report_url }}
+
+DASHBOARD:
+{{ dashboard_url }}
+
+UNSUBSCRIBE / PREFERENCES:
+{{ unsubscribe_url }}

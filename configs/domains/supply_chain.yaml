@@ -1,0 +1,32 @@
+domain:
+  id: supply_chain
+  name: Supply Chain & Logistics
+  description: >
+    Track global supply chains, freight, procurement,
+    inventory management, and port operations.
+
+  keywords:
+    - freight rates
+    - container shipping
+    - procurement
+    - port congestion
+    - logistics automation
+    - warehousing robotics
+    - cold chain
+    - nearshoring
+
+  subtopics:
+    - maritime shipping
+    - air cargo
+    - fleet electrification
+    - supplier risk management
+    - trade tariffs
+
+  excluded_keywords:
+    - recruitment postings
+    - generic real estate ads
+
+  report:
+    max_developments: 5
+    include_sentiment: true
+    include_trends: true

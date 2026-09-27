@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalBrief | {{ domain_name }} Intelligence — {{ report_date }}</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent: #38bdf8;
+      --accent-dim: #0284c7;
+      --highlight: #34d399;
+      --tag-bg: #1e3a5f;
+      --tag-text: #7dd3fc;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    header.report-header {
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .badge-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .domain-tag {
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      border: 1px solid #0369a1;
+    }
+    .report-date {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    h1.title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    p.tagline {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+    .executive-summary {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .executive-summary h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .executive-summary p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #f1f5f9;
+      border-left: 4px solid var(--accent);
+      padding-left: 0.65rem;
+    }
+    .developments-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .development-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+    .development-card:hover {
+      border-color: #475569;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #f8fafc;
+      text-decoration: none;
+    }
+    .card-title:hover {
+      color: var(--accent);
+    }
+    .cluster-tag {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      background: #0f172a;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-left: 0.5rem;
+    }
+    .card-triad {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .triad-item {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .triad-item strong {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    .citations-bar {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #334155;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .citations-bar a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .citations-bar a:hover {
+      text-decoration: underline;
+    }
+    .watch-section {
+      background: #111e38;
+      border: 1px solid #1e3a8a;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .watch-section h3 {
+      color: #60a5fa;
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+    }
+    .watch-section ul {
+      margin-left: 1.25rem;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+    footer.report-footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+    footer.report-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="report-header">
+      <div class="badge-bar">
+        <span class="domain-tag">{{ domain_name }}</span>
+        <span class="report-date">{{ report_date }}</span>
+      </div>
+      <h1 class="title">Daily Intelligence Brief</h1>
+      <p class="tagline">Know what changed. Understand why it matters. See what to watch next.</p>
+    </header>
+
+    <section class="executive-summary">
+      <h2>Executive Summary</h2>
+      <p>{{ executive_summary }}</p>
+    </section>
+
+    <main>
+      <h2 class="section-title">Key Developments</h2>
+      <div class="developments-grid">
+        {% for item in developments %}
+        <article class="development-card">
+          <div class="card-top">
+            <h3 class="card-title">{{ item.headline }}</h3>
+            {% if item.topic_label %}
+            <span class="cluster-tag">{{ item.topic_label }}</span>
+            {% endif %}
+          </div>
+          <div class="card-triad">
+            <div class="triad-item">
+              <strong>What changed:</strong> {{ item.what_changed }}
+            </div>
+            <div class="triad-item">
+              <strong>Why it matters:</strong> {{ item.why_it_matters }}
+            </div>
+            <div class="triad-item">
+              <strong>What to watch:</strong> {{ item.what_to_watch }}
+            </div>
+          </div>
+          <div class="citations-bar">
+            <span>Sources:</span>
+            {% for cite in item.sources %}
+            <a href="{{ cite.url }}" target="_blank" rel="noopener noreferrer">
+              [{{ cite.source_name or 'Source' }}] {{ cite.title | truncate(45) }}
+            </a>
+            {% endfor %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      {% if what_to_watch_next %}
+      <section class="watch-section">
+        <h3>Horizon & Upcoming Triggers</h3>
+        <ul>
+          {% for point in what_to_watch_next %}
+          <li>{{ point }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </main>
+
+    <footer class="report-footer">
+      <p>Generated by <strong>SignalBrief</strong> · Open-source, free-first automated text intelligence.</p>
+      <p>Report ID: <code>{{ report_id }}</code> · Traceable evidence based on {{ article_count }} public source articles.</p>
+      <p><a href="{{ dashboard_url }}">Dashboard</a> · <a href="{{ unsubscribe_url }}">Manage Preferences</a></p>
+    </footer>
+  </div>
+</body>
+</html>

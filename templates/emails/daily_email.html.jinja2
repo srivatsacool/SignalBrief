@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SignalBrief | {{ domain_name }} Daily Briefing</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 24px;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
+    <tr>
+      <td style="padding: 24px; background: #0f172a; color: #ffffff;">
+        <span style="font-size: 11px; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase; background: #0284c7; color: #ffffff; padding: 4px 8px; border-radius: 4px;">{{ domain_name }}</span>
+        <h1 style="font-size: 20px; font-weight: 800; margin: 12px 0 4px 0; color: #ffffff;">SignalBrief Intelligence</h1>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0;">{{ report_date }} · Daily Executive Briefing</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
+        <p style="font-size: 14px; line-height: 1.5; color: #334155; margin: 0;">
+          <strong>Executive Summary:</strong> {{ executive_summary }}
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 24px;">
+        <h2 style="font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 0 0 16px 0;">Top Developments</h2>
+        {% for item in developments[:4] %}
+        <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
+          <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0;">{{ item.headline }}</h3>
+          <p style="font-size: 13px; color: #475569; margin: 0 0 6px 0;"><strong>What Changed:</strong> {{ item.what_changed }}</p>
+          <p style="font-size: 13px; color: #475569; margin: 0 0 6px 0;"><strong>Why It Matters:</strong> {{ item.why_it_matters }}</p>
+          <div style="font-size: 12px; color: #64748b;">
+            Sources:
+            {% for cite in item.sources %}
+            <a href="{{ cite.url }}" style="color: #0284c7; text-decoration: none;">[{{ cite.source_name }}]</a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 20px 24px; text-align: center; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+        <a href="{{ report_url }}" style="display: inline-block; background: #0284c7; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 6px;">View Complete Interactive Report</a>
+        <p style="font-size: 12px; color: #94a3b8; margin: 16px 0 0 0;">
+          <a href="{{ dashboard_url }}" style="color: #64748b;">Dashboard</a> · 
+          <a href="{{ unsubscribe_url }}" style="color: #64748b;">Unsubscribe / Pause</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

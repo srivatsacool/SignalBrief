@@ -1,0 +1,34 @@
+domain:
+  id: manufacturing
+  name: Manufacturing
+  description: >
+    Monitor developments in manufacturing,
+    industrial technology, and operations.
+
+  keywords:
+    - industrial automation
+    - smart manufacturing
+    - Industry 4.0
+    - factory digitization
+    - manufacturing analytics
+    - robotics in manufacturing
+    - additive manufacturing
+    - semiconductor fabrication
+
+  subtopics:
+    - industrial AI
+    - workforce analytics
+    - predictive maintenance
+    - production technology
+    - supply chain resilience
+    - clean manufacturing
+
+  excluded_keywords:
+    - job advertisements
+    - unrelated product promotions
+    - stock market ticker spam
+
+  report:
+    max_developments: 5
+    include_sentiment: true
+    include_trends: true

@@ -1,0 +1,24 @@
+sources:
+  - id: reuters_technology
+    name: "Reuters Technology Feed"
+    domain_id: "general"
+    url: "https://www.reuters.com"
+    feed_url: "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 360
+    active: true
+    reliability_score: 0.95
+    notes: "General enterprise technology and industrial policy reporting."
+
+  - id: hacker_news_rss
+    name: "Hacker News Frontpage RSS"
+    domain_id: "general"
+    url: "https://news.ycombinator.com"
+    feed_url: "https://news.ycombinator.com/rss"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 180
+    active: true
+    reliability_score: 0.80
+    notes: "Engineering, tech breakthroughs, and open source software discussions."

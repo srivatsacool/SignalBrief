@@ -1,0 +1,50 @@
+name: Notebook Validation
+
+on:
+  push:
+    paths:
+      - "notebooks/**"
+      - ".github/workflows/notebook-validation.yml"
+  pull_request:
+    paths:
+      - "notebooks/**"
+      - ".github/workflows/notebook-validation.yml"
+
+jobs:
+  validate-notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install .
+
+      - name: Validate Notebook Syntax & Integrity
+        run: |
+          python -c "
+          import json, glob, sys
+          notebooks = glob.glob('notebooks/*.ipynb')
+          print(f'Checking {len(notebooks)} notebooks...')
+          failed = False
+          for nb in notebooks:
+              try:
+                  with open(nb, 'r', encoding='utf-8') as f:
+                      data = json.load(f)
+                      assert 'cells' in data, 'Missing cells key'
+                      assert 'metadata' in data, 'Missing metadata key'
+                      print(f'✓ {nb} JSON valid (cells: {len(data[\"cells\"])})')
+              except Exception as e:
+                  print(f'✗ {nb} FAILED: {e}')
+                  failed = True
+          if failed:
+              sys.exit(1)
+          "

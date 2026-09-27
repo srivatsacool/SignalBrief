@@ -1,0 +1,24 @@
+sources:
+  - id: supply_chain_dive
+    name: "Supply Chain Dive"
+    domain_id: "supply_chain"
+    url: "https://www.supplychaindive.com"
+    feed_url: "https://www.supplychaindive.com/feeds/news/"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 240
+    active: true
+    reliability_score: 0.92
+    notes: "Deep coverage of logistics, freight shipping, port congestion, and procurement."
+
+  - id: maritime_executive
+    name: "The Maritime Executive"
+    domain_id: "supply_chain"
+    url: "https://maritime-executive.com"
+    feed_url: "https://maritime-executive.com/rss"
+    source_type: "rss"
+    permitted_method: "rss_fetch"
+    polling_frequency_minutes: 360
+    active: true
+    reliability_score: 0.88
+    notes: "Global maritime shipping, tanker routes, canal traffic, and port operations."

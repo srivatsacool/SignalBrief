@@ -1,0 +1,40 @@
+pipeline:
+  name: "SignalBrief Daily Intelligence Pipeline"
+  version: "1.0.0"
+  environment: "development"
+
+schedule:
+  cron: "0 2 * * *" # Daily at 02:00 UTC
+  timezone: "UTC"
+
+collection:
+  lookback_hours: 48
+  max_articles_per_source: 30
+  request_timeout_seconds: 15
+  user_agent: "SignalBrief/1.0 (+https://github.com/SignalBrief/SignalBrief; contact@signalbrief.local)"
+  max_concurrent_requests: 5
+  retry_attempts: 2
+  retry_backoff_seconds: 3
+
+preprocessing:
+  min_article_length_words: 40
+  max_article_length_words: 5000
+  supported_languages:
+    - en
+  strip_html_boilerplate: true
+  similarity_dedup_threshold: 0.85
+
+analytics:
+  min_relevance_score: 0.35
+  max_clusters: 8
+  cluster_similarity_threshold: 0.65
+  max_developments_per_report: 5
+  sentiment_analysis_enabled: true
+  entity_extraction_enabled: true
+
+reporting:
+  format: "html"
+  template_path: "templates/reports/daily_report.html.jinja2"
+  include_evidence_links: true
+  include_sentiment_badge: true
+  max_bullet_points_per_item: 3
