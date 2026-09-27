@@ -66,7 +66,10 @@ def cluster_articles(
             "is_multisource": len(sources) > 1,
             "centroid_article_id": centroid_article["id"],
             "centroid_title": centroid_article["title"],
+            "centroid_url": centroid_article.get("url", ""),
+            "member_articles": member_articles,
         }
+
 
     # Annotate articles with cluster ID
     annotated = []

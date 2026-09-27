@@ -1,9 +1,9 @@
 """Article validation models and sanity checks."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from signalbrief.preprocessing.cleaning import clean_article_text, count_words
 from signalbrief.preprocessing.language import is_supported_language
@@ -20,7 +20,8 @@ class CleanArticle(BaseModel):
     content_hash: str
     author: Optional[str] = None
     published_at: Optional[datetime] = None
-    fetched_at: datetime
+    fetched_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
     clean_text: str
     word_count: int
     language: str = "en"

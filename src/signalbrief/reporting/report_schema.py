@@ -23,6 +23,14 @@ class ReportDevelopment(BaseModel):
     sources: List[Citation] = Field(default_factory=list)
     relevance_score: float = 0.0
 
+    @property
+    def title(self) -> str:
+        return self.headline
+
+
+# Alias for backward/forward blueprint compatibility
+DevelopmentItem = ReportDevelopment
+
 
 class DailyReport(BaseModel):
     id: str
@@ -37,3 +45,7 @@ class DailyReport(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     dashboard_url: str = "https://signalbrief.local"
     unsubscribe_url: str = "https://signalbrief.local/settings"
+
+    @property
+    def executive_takeaway(self) -> str:
+        return self.executive_summary

@@ -1,19 +1,23 @@
 """Sentiment and tone analysis tailored for industrial and manufacturing news."""
 
+import re
 from typing import Tuple
 
 POSITIVE_INDICATORS = {
-    "award", "awards", "grant", "funding", "invest", "investment", "investments",
-    "expansion", "expand", "breakthrough", "upgrade", "upgrades", "growth",
-    "advance", "advances", "boost", "accelerate", "partnership", "success",
-    "adopt", "adoption", "modernize", "innovation", "innovative"
+    "award", "awards", "awarded", "grant", "grants", "funding", "invest", "investment",
+    "investments", "expansion", "expand", "breakthrough", "upgrade", "upgrades", "growth",
+    "advance", "advances", "advancements", "boost", "boosts", "accelerate", "accelerates",
+    "partnership", "success", "adopt", "adoption", "modernize", "modernization", "innovation",
+    "innovative", "deployed", "deploy", "surging", "efficient", "efficiency", "record",
+    "profit", "profits", "development", "developments"
 }
 
 NEGATIVE_INDICATORS = {
-    "delay", "delays", "disruption", "disruptions", "failure", "layoff", "layoffs",
-    "decline", "shortage", "shortages", "bottleneck", "bottlenecks", "hazard",
-    "defect", "defects", "strike", "breach", "cyberattack", "vulnerability",
-    "loss", "losses", "cut", "cuts", "down"
+    "delay", "delays", "disruption", "disruptions", "failure", "failures", "layoff", "layoffs",
+    "decline", "declines", "shortage", "shortages", "bottleneck", "bottlenecks", "hazard",
+    "hazards", "defect", "defects", "strike", "strikes", "breach", "cyberattack",
+    "vulnerability", "vulnerabilities", "loss", "losses", "cut", "cuts", "down", "warns",
+    "warning", "breakdown", "fatal", "shutdown"
 }
 
 
@@ -24,7 +28,7 @@ def analyze_sentiment(text: str) -> Tuple[str, float]:
     and polarity_score is in [-1.0, 1.0].
     """
     text_lower = text.lower()
-    words = set(text_lower.split())
+    words = set(re.findall(r"\b[a-zA-Z]+\b", text_lower))
 
     pos_matches = len(words.intersection(POSITIVE_INDICATORS))
     neg_matches = len(words.intersection(NEGATIVE_INDICATORS))

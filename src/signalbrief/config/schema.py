@@ -34,6 +34,11 @@ class SourceConfig(BaseModel):
     reliability_score: float = Field(default=0.85, ge=0.0, le=1.0)
     notes: Optional[str] = None
 
+    @property
+    def endpoint(self) -> str:
+        return self.feed_url or self.url
+
+
 
 class SourcesListConfig(BaseModel):
     sources: List[SourceConfig] = Field(default_factory=list)

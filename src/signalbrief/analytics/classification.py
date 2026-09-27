@@ -1,5 +1,6 @@
 """Subtopic classification for domain articles using keyword and taxonomy matching."""
 
+import re
 from typing import Dict, List, Tuple
 
 DEFAULT_SUBTOPIC_TAXONOMY = {
@@ -8,8 +9,8 @@ DEFAULT_SUBTOPIC_TAXONOMY = {
         "deep learning", "neural network", "generative ai", "llm"
     ],
     "predictive maintenance": [
-        "predictive maintenance", "condition monitoring", "vibration analysis",
-        "sensor data", "equipment failure", "downtime", "maintenance"
+        "predictive maintenance", "condition monitoring", "vibration", "vibration analysis",
+        "sensor", "sensor data", "equipment failure", "downtime", "maintenance"
     ],
     "production technology": [
         "production technology", "automation", "robotics", "robot", "agv",
@@ -37,6 +38,7 @@ def classify_subtopic(
 ) -> Tuple[str, float]:
     """Classify text into a subtopic based on taxonomy term matching and frequency.
 
+    Uses whole-word boundary regex matching to avoid spurious substring hits (e.g. 'ai' in 'failure').
     Returns (predicted_subtopic, confidence_score).
     """
     taxonomy = subtopics_dict or DEFAULT_SUBTOPIC_TAXONOMY
@@ -44,14 +46,13 @@ def classify_subtopic(
 
     scores = {}
     for subtopic, terms in taxonomy.items():
-        score = 0
+        score = 0.0
         for term in terms:
-            if term in text_lower:
-                # Count occurrences of term
-                occurrences = text_lower.count(term)
-                # Weight longer multi-word phrases higher
-                weight = 1.5 if " " in term else 1.0
-                score += occurrences * weight
+            pattern = r"\b" + re.escape(term.lower()) + r"\b"
+            matches = len(re.findall(pattern, text_lower))
+            if matches > 0:
+                weight = 1.8 if " " in term else 1.0
+                score += matches * weight
         scores[subtopic] = score
 
     best_subtopic, best_score = max(scores.items(), key=lambda x: x[1])

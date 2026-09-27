@@ -56,6 +56,9 @@ def synthesize_triad_from_cluster(cluster: dict) -> ReportDevelopment:
     )
 
 
+generate_triadic_summary = synthesize_triad_from_cluster
+
+
 def build_daily_report_payload(
     domain_id: str,
     domain_name: str,
