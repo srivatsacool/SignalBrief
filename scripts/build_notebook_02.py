@@ -206,22 +206,22 @@ for c in candidates:
     source_id = c["id"]
     feed_url = c["feed_url"]
     start_time = time.time()
-    
+
     try:
         response = requests.get(feed_url, headers=headers, timeout=12)
         latency_ms = round((time.time() - start_time) * 1000, 1)
         status_code = response.status_code
-        
+
         if status_code == 200:
             parsed = feedparser.parse(response.content)
             entries = parsed.entries
             entry_count = len(entries)
-            
+
             # Check schema completeness on sample entries
             has_dates = 0
             has_summaries = 0
             has_titles = 0
-            
+
             for e in entries[:10]:
                 if e.get("title"):
                     has_titles += 1
@@ -229,12 +229,12 @@ for c in candidates:
                     has_summaries += 1
                 if any(e.get(k) for k in ("published", "pubDate", "updated")):
                     has_dates += 1
-                    
+
             sample_size = min(entry_count, 10) if entry_count > 0 else 1
             date_ratio = has_dates / sample_size
             summary_ratio = has_summaries / sample_size
             title_ratio = has_titles / sample_size
-            
+
             # Compute Reliability Score
             # Status 200: 0.40 pts
             # Valid entries (>0): 0.20 pts
@@ -242,7 +242,7 @@ for c in candidates:
             # Summary presence: 0.20 pts
             reliability = round(0.40 + (0.20 if entry_count > 0 else 0) + (0.20 * date_ratio) + (0.20 * summary_ratio), 2)
             passed = entry_count > 0 and date_ratio >= 0.5
-            
+
             results.append({
                 "id": source_id,
                 "name": c["name"],

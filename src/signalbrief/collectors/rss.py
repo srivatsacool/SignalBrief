@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 import feedparser
+import requests
 from dateutil import parser as date_parser
 
 from signalbrief.collectors.base import RawArticle
@@ -12,6 +13,10 @@ from signalbrief.collectors.deduplication import compute_content_hash, normalize
 from signalbrief.config.schema import SourceConfig
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SignalBrief/1.0 (+https://github.com/SignalBrief/SignalBrief)"
+}
 
 
 def parse_entry_date(entry: dict) -> Optional[datetime]:
@@ -29,10 +34,24 @@ def parse_entry_date(entry: dict) -> Optional[datetime]:
     return None
 
 
-def fetch_rss_feed(source: SourceConfig, max_articles: int = 25) -> List[RawArticle]:
-    """Fetch and parse articles from an RSS/Atom feed."""
+def fetch_rss_feed(
+    source: SourceConfig,
+    max_articles: int = 25,
+    timeout_seconds: int = 15,
+    headers: Optional[dict] = None,
+) -> List[RawArticle]:
+    """Fetch and parse articles from an RSS/Atom feed using requests for reliable headers."""
     logger.info(f"Fetching RSS feed: {source.name} ({source.feed_url})")
-    parsed_feed = feedparser.parse(source.feed_url)
+    req_headers = headers or DEFAULT_HEADERS
+    try:
+        response = requests.get(source.feed_url, headers=req_headers, timeout=timeout_seconds)
+        response.raise_for_status()
+        content = response.content
+    except Exception as e:
+        logger.error(f"Failed to fetch RSS feed {source.name} ({source.feed_url}): {e}")
+        return []
+
+    parsed_feed = feedparser.parse(content)
     articles: List[RawArticle] = []
 
     for entry in parsed_feed.entries[:max_articles]:
