@@ -1,48 +1,56 @@
 sources:
-  - id: nist_manufacturing
-    name: "NIST Manufacturing News"
-    domain_id: "manufacturing"
-    url: "https://www.nist.gov"
-    feed_url: "https://www.nist.gov/news-events/news/rss.xml"
-    source_type: "rss"
-    permitted_method: "rss_fetch"
-    polling_frequency_minutes: 360
-    active: true
-    reliability_score: 0.95
-    notes: "US National Institute of Standards and Technology research and manufacturing standards updates."
-
-  - id: manufacturing_dive
-    name: "Manufacturing Dive"
-    domain_id: "manufacturing"
-    url: "https://www.manufacturingdive.com"
-    feed_url: "https://www.manufacturingdive.com/feeds/news/"
-    source_type: "rss"
-    permitted_method: "rss_fetch"
-    polling_frequency_minutes: 240
-    active: true
-    reliability_score: 0.90
-    notes: "Industry intelligence on smart factories, supply chain, robotics, and operations."
-
-  - id: industry_week
-    name: "IndustryWeek"
-    domain_id: "manufacturing"
-    url: "https://www.industryweek.com"
-    feed_url: "https://www.industryweek.com/rss/all"
-    source_type: "rss"
-    permitted_method: "rss_fetch"
-    polling_frequency_minutes: 240
-    active: true
-    reliability_score: 0.88
-    notes: "Leadership and operational strategy in industrial manufacturing."
-
-  - id: manufacturing_net
-    name: "Manufacturing.net"
-    domain_id: "manufacturing"
-    url: "https://www.manufacturing.net"
-    feed_url: "https://www.manufacturing.net/rss"
-    source_type: "rss"
-    permitted_method: "rss_fetch"
-    polling_frequency_minutes: 360
-    active: true
-    reliability_score: 0.85
-    notes: "Technology and supply news across US and global manufacturers."
+- id: nist_manufacturing
+  name: NIST Manufacturing News
+  domain_id: manufacturing
+  url: https://www.nist.gov
+  feed_url: https://www.nist.gov/news-events/news/rss.xml
+  source_type: rss
+  permitted_method: rss_fetch
+  polling_frequency_minutes: 360
+  active: true
+  reliability_score: 1.0
+  notes: 40 entries available; XML parsed cleanly.
+- id: manufacturing_dive
+  name: Manufacturing Dive
+  domain_id: manufacturing
+  url: https://www.manufacturingdive.com
+  feed_url: https://www.manufacturingdive.com/feeds/news/
+  source_type: rss
+  permitted_method: rss_fetch
+  polling_frequency_minutes: 240
+  active: true
+  reliability_score: 1.0
+  notes: 10 entries available; XML parsed cleanly.
+- id: supply_chain_dive
+  name: Supply Chain Dive
+  domain_id: manufacturing
+  url: https://www.supplychaindive.com
+  feed_url: https://www.supplychaindive.com/feeds/news/
+  source_type: rss
+  permitted_method: rss_fetch
+  polling_frequency_minutes: 240
+  active: true
+  reliability_score: 1.0
+  notes: 10 entries available; XML parsed cleanly.
+- id: the_robot_report
+  name: The Robot Report
+  domain_id: manufacturing
+  url: https://www.therobotreport.com
+  feed_url: https://www.roboticsbusinessreview.com/feed/
+  source_type: rss
+  permitted_method: rss_fetch
+  polling_frequency_minutes: 240
+  active: true
+  reliability_score: 1.0
+  notes: 15 entries available; XML parsed cleanly.
+- id: mit_tech_review
+  name: MIT Technology Review
+  domain_id: manufacturing
+  url: https://www.technologyreview.com
+  feed_url: https://www.technologyreview.com/feed/
+  source_type: rss
+  permitted_method: rss_fetch
+  polling_frequency_minutes: 360
+  active: true
+  reliability_score: 1.0
+  notes: 10 entries available; XML parsed cleanly.
