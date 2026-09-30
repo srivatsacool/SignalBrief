@@ -38,7 +38,7 @@ DEFAULT_DOMAIN = "manufacturing"
 REPORT_RECIPIENT_LIMIT = 7
 LOG_LEVEL = "INFO"
 SIGNALBRIEF_INTERNAL_KEY = "dev-internal-secret-key-12345"
-ALLOWED_ORIGINS = "http://localhost:4321,http://localhost:3000,https://signalbrief-9bw.pages.dev"
+ALLOWED_ORIGINS = "http://localhost:4321,http://localhost:3000,https://signalbrief-9bw.pages.dev,https://signalbrief-try.pages.dev"
 DASHBOARD_URL = "https://signalbrief-9bw.pages.dev"
 
 [env.production.vars]
@@ -46,6 +46,6 @@ ENVIRONMENT = "production"
 DEFAULT_DOMAIN = "manufacturing"
 REPORT_RECIPIENT_LIMIT = 7
 LOG_LEVEL = "INFO"
-ALLOWED_ORIGINS = "https://signalbrief-9bw.pages.dev"
+ALLOWED_ORIGINS = "https://signalbrief-9bw.pages.dev,https://signalbrief-try.pages.dev"
 DASHBOARD_URL = "https://signalbrief-9bw.pages.dev"
 
