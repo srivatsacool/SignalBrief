@@ -3,6 +3,7 @@
 import argparse
 import json
 import logging
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -26,8 +27,6 @@ from signalbrief.pipeline.stages import (
     stage_render,
 )
 from signalbrief.reporting.validation import validate_report
-
-import os
 
 logger = logging.getLogger("signalbrief")
 

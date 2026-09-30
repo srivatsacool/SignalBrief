@@ -1,8 +1,9 @@
 """Unit tests for D1 SQLite database schema and Worker query compatibility."""
 
 import json
-from pathlib import Path
 import sqlite3
+from pathlib import Path
+
 import pytest
 
 SCHEMA_PATH = Path(__file__).resolve().parent.parent.parent / "migrations" / "0001_initial_schema.sql"
@@ -156,7 +157,7 @@ def test_worker_report_and_developments_queries(db_conn):
 
     # Test getLatestReport developments query with JSON aggregation
     devs_query = """
-      SELECT rd.*, 
+      SELECT rd.*,
              json_group_array(
                json_object('article_id', rs.article_id, 'source_name', rs.source_name, 'title', rs.title, 'url', rs.url)
              ) as sources_json

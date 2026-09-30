@@ -223,10 +223,10 @@ export default {
       // 11. Subscriber Invite (POST /api/subscribers/invite)
       if (path === "/api/subscribers/invite" && request.method === "POST") {
         const authHeader = request.headers.get("Authorization") || "";
-        const expectedSecret = env.ADMIN_SECRET_KEY || env.SIGNALBRIEF_INTERNAL_KEY || "dev-internal-secret-key-12345";
+        const expectedSecret = env.ADMIN_SECRET_KEY || env.SIGNALBRIEF_INTERNAL_KEY;
         const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
-        if (!token || token !== expectedSecret) {
+        if (!expectedSecret || !token || token !== expectedSecret) {
           return jsonResponse({ error: "Unauthorized: admin authorization required to invite subscribers" }, 401, cors);
         }
 
@@ -299,11 +299,12 @@ export default {
         const body = await request.json().catch(() => ({}));
         const domain = body.domain || url.searchParams.get("domain") || env.DEFAULT_DOMAIN || "manufacturing";
         const runDate = new Date().toISOString().split("T")[0];
-        const suffix = Math.random().toString(36).substring(2, 8);
-        const jobId = `job_${domain}_${runDate}_${suffix}`;
+        const randomId = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).substring(2, 10);
+        const jobId = `job_${domain}_${runDate}_${randomId.substring(0, 8)}`;
 
-        // Generate a one-time callback token (HMAC would be ideal; here we use a random secret)
-        const jobToken = `tok_${Math.random().toString(36).substring(2, 18)}_${Date.now()}`;
+        // Generate a cryptographically secure one-time callback token
+        const entropy = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).substring(2, 18);
+        const jobToken = `tok_${entropy}_${Date.now()}`;
 
         if (db) {
           await db.createJob(jobId, domain, runDate, "user", jobToken);
@@ -371,7 +372,11 @@ export default {
         if (!jobId) return jsonResponse({ error: "Missing job ID" }, 400, cors);
         if (db) {
           const job = await db.getJobById(jobId);
-          if (job) return jsonResponse(job, 200, cors);
+          if (job) {
+            // Security hardening: Never leak the callback job_token to public GET requests
+            const { job_token, ...safeJob } = job;
+            return jsonResponse(safeJob, 200, cors);
+          }
         }
         return jsonResponse({ error: "Job not found", job_id: jobId }, 404, cors);
       }
@@ -391,8 +396,8 @@ export default {
           if (!job) return jsonResponse({ error: "Job not found" }, 404, cors);
 
           // Verify token matches what was issued at job creation
-          if (job.job_token && providedToken !== job.job_token) {
-            return jsonResponse({ error: "Invalid job token" }, 401, cors);
+          if (!job.job_token || !providedToken || providedToken !== job.job_token) {
+            return jsonResponse({ error: "Unauthorized: invalid or missing job token" }, 401, cors);
           }
 
           const body = await request.json().catch(() => ({}));
@@ -431,10 +436,10 @@ export default {
       // Secured by Bearer token matching SIGNALBRIEF_INTERNAL_KEY
       if (path === "/api/internal/report" && request.method === "POST") {
         const authHeader = request.headers.get("Authorization") || "";
-        const expectedSecret = env.SIGNALBRIEF_INTERNAL_KEY || "dev-internal-secret-key-12345";
+        const expectedSecret = env.SIGNALBRIEF_INTERNAL_KEY;
         const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
-        if (!token || token !== expectedSecret) {
+        if (!expectedSecret || !token || token !== expectedSecret) {
           return jsonResponse({ error: "Unauthorized: invalid or missing bearer token" }, 401, cors);
         }
 

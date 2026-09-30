@@ -9,7 +9,9 @@ Audits and verifies SignalBrief_Text_Analytics_Final.ipynb:
 
 import sys
 from pathlib import Path
+
 import nbformat
+
 
 def verify_notebook():
     nb_path = Path("SignalBrief_Text_Analytics_Final.ipynb")

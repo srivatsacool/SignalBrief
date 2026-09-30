@@ -3,7 +3,6 @@
 import re
 from typing import Dict, List, Optional, Tuple
 
-from signalbrief.analytics.entities import extract_entities
 from signalbrief.preprocessing.cleaning import JOURNALISTIC_STOPWORDS
 from signalbrief.preprocessing.extraction import extract_numeric_metrics, split_sentences
 from signalbrief.reporting.report_schema import Citation, DailyReport, ReportDevelopment

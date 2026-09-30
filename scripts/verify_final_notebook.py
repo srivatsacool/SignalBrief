@@ -8,6 +8,7 @@ Audits the executed Employee_Voice_Analytics_Final.ipynb:
 
 import sys
 from pathlib import Path
+
 import nbformat as nbf
 
 if hasattr(sys.stdout, 'reconfigure'):
@@ -66,7 +67,7 @@ for i, cell in enumerate(cells):
             prev_md = cells[i - 1].source
             if "WHAT ARE WE DOING" not in prev_md:
                 rule_violations.append((i, "Pre-MD missing 'WHAT ARE WE DOING' section"))
-        
+
         # Check cell after
         if i == len(cells) - 1 or cells[i + 1].cell_type != 'markdown':
             rule_violations.append((i, "Missing explanatory Markdown cell IMMEDIATELY AFTER code cell"))

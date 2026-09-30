@@ -55,13 +55,21 @@ jobs:
           pip install -r requirements.txt
           pip install .
 
+      - name: Mask Sensitive Tokens
+        run: |
+          if [ -n "${{ github.event.inputs.job_token }}" ]; then
+            echo "::add-mask::${{ github.event.inputs.job_token }}"
+          fi
+
       - name: Mark Job as RUNNING (callback to Worker)
         if: ${{ github.event.inputs.job_id != '' && github.event.inputs.worker_api_url != '' }}
+        env:
+          JOB_TOKEN: ${{ github.event.inputs.job_token }}
         run: |
           curl -s -X POST \
             "${{ github.event.inputs.worker_api_url }}/api/jobs/${{ github.event.inputs.job_id }}/callback" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ github.event.inputs.job_token }}" \
+            -H "Authorization: Bearer ${JOB_TOKEN}" \
             -d '{"status":"running"}' || echo "Callback failed (non-fatal)"
 
       - name: Run Daily Intelligence Pipeline
@@ -85,7 +93,7 @@ jobs:
           fi
           JOB_FLAGS=""
           if [ -n "${{ github.event.inputs.job_id }}" ]; then
-            JOB_FLAGS="--job-id ${{ github.event.inputs.job_id }} --job-token ${{ github.event.inputs.job_token }}"
+            JOB_FLAGS="--job-id ${{ github.event.inputs.job_id }}"
           fi
           WORKER_URL_FLAG=""
           if [ -n "${PIPELINE_WORKER_URL}" ]; then

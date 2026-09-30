@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from signalbrief.reporting.report_schema import ReportDevelopment
 from signalbrief.reporting.summarization import (
     clean_headline,

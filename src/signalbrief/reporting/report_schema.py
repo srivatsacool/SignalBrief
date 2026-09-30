@@ -1,7 +1,7 @@
 """Data models for generated intelligence briefs, citations, and analytical frameworks."""
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
