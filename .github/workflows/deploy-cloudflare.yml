@@ -15,6 +15,7 @@ jobs:
   deploy-workers:
     name: Deploy Workers & D1 Migrations
     runs-on: ubuntu-latest
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +37,7 @@ jobs:
   deploy-pages:
     name: Build & Deploy Astro Dashboard
     runs-on: ubuntu-latest
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
