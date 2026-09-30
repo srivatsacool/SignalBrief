@@ -11,7 +11,7 @@ crons = ["0 2 * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "signalbrief-d1"
-database_id = "signalbrief-d1-placeholder-id"
+database_id = "127b2c2d-6613-42d8-ae60-73dd07714bf3"
 migrations_dir = "migrations"
 
 # Object Storage binding for Archived HTML Reports (Cloudflare R2)
@@ -38,14 +38,14 @@ DEFAULT_DOMAIN = "manufacturing"
 REPORT_RECIPIENT_LIMIT = 7
 LOG_LEVEL = "INFO"
 SIGNALBRIEF_INTERNAL_KEY = "dev-internal-secret-key-12345"
-ALLOWED_ORIGINS = "http://localhost:4321,http://localhost:3000,https://signalbrief.pages.dev"
-DASHBOARD_URL = "http://localhost:4321"
+ALLOWED_ORIGINS = "http://localhost:4321,http://localhost:3000,https://signalbrief-9bw.pages.dev"
+DASHBOARD_URL = "https://signalbrief-9bw.pages.dev"
 
 [env.production.vars]
 ENVIRONMENT = "production"
 DEFAULT_DOMAIN = "manufacturing"
 REPORT_RECIPIENT_LIMIT = 7
 LOG_LEVEL = "INFO"
-ALLOWED_ORIGINS = "https://signalbrief.pages.dev"
-DASHBOARD_URL = "https://signalbrief.pages.dev"
+ALLOWED_ORIGINS = "https://signalbrief-9bw.pages.dev"
+DASHBOARD_URL = "https://signalbrief-9bw.pages.dev"
 
