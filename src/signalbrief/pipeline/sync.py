@@ -65,7 +65,7 @@ def sync_report_to_cloudflare(
     }
 
     payload = {
-        "report": report_payload.model_dump(),
+        "report": report_payload.model_dump(mode="json"),
         "html": html_content,
         "email_html": email_html,
         "email_text": email_text,
