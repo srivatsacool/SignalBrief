@@ -444,7 +444,7 @@ export default function GenerateReportModal() {
               </div>
             )}
           </div>
-        </div>,
+        </div>
         document.body
       )}
     </>
