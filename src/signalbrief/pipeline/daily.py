@@ -42,6 +42,7 @@ def run_daily_pipeline(
     api_url: Optional[str] = None,
     internal_key: Optional[str] = None,
     dispatch_email: bool = False,
+    job_id: Optional[str] = None,
 ) -> RunState:
     """Execute the full 5-stage daily pipeline end-to-end.
 
@@ -106,6 +107,8 @@ def run_daily_pipeline(
             n_clusters=min(6, max(2, len(annotated_articles) // 3)),
         )
         logger.info(f"Identified {len(cluster_info)} clusters, selected top {len(ranked_developments)} developments.")
+        # Track cluster count in state for job reporting
+        state.clusters_formed = len(cluster_info)
 
         # Stage 5: Report Generation
         state.transition_to(PipelineStatus.GENERATING)
@@ -161,8 +164,14 @@ def run_daily_pipeline(
                         articles_collected=state.articles_collected,
                         articles_processed=state.articles_processed,
                         duration_seconds=state.duration_seconds,
+                        job_id=job_id,
+                        relevant_articles=getattr(state, 'relevant_articles', 0),
+                        clusters_formed=getattr(state, 'clusters_formed', 0),
                     )
                     logger.info(f"Cloud sync successful: R2 Key: {sync_data.get('r2_key')}")
+                    # Track the report_id returned from cloud sync
+                    if sync_data.get('report_id'):
+                        state.report_id = sync_data['report_id']
                 except Exception as sync_err:
                     logger.error(f"Cloud sync failed: {sync_err}", exc_info=True)
                     state.transition_to(PipelineStatus.FAILED, error=f"Cloud sync failed: {sync_err}")

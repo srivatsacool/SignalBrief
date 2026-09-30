@@ -29,9 +29,18 @@ class RunState(BaseModel):
     completed_at: Optional[datetime] = None
     articles_collected: int = 0
     articles_processed: int = 0
+    relevant_articles: int = 0
+    clusters_formed: int = 0
     reports_generated: int = 0
     emails_delivered: int = 0
+    report_id: Optional[str] = None
     error_message: Optional[str] = None
+
+    @property
+    def duration_seconds(self) -> float:
+        """Elapsed seconds since pipeline start."""
+        end = self.completed_at or datetime.now(timezone.utc)
+        return (end - self.started_at).total_seconds()
 
     def transition_to(self, new_status: PipelineStatus, error: Optional[str] = None):
         """Transition pipeline state safely."""

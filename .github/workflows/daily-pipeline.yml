@@ -3,7 +3,6 @@ run-name: Daily Briefing Pipeline (${{ github.event.inputs.domain || 'manufactur
 
 on:
   schedule:
-    # 02:00 UTC daily execution
     - cron: "0 2 * * *"
   workflow_dispatch:
     inputs:
@@ -21,12 +20,24 @@ on:
         type: boolean
         required: true
         default: false
+      job_id:
+        description: "Pipeline job ID (for user-triggered runs - set by Worker)"
+        required: false
+        default: ""
+      job_token:
+        description: "Pipeline job callback token (for authenticated status callbacks)"
+        required: false
+        default: ""
+      worker_api_url:
+        description: "Cloudflare Worker base URL (for job callbacks)"
+        required: false
+        default: ""
 
 jobs:
   run-pipeline:
     name: Execute Daily Python Pipeline
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Repository
@@ -44,11 +55,24 @@ jobs:
           pip install -r requirements.txt
           pip install .
 
+      - name: Mark Job as RUNNING (callback to Worker)
+        if: ${{ github.event.inputs.job_id != '' && github.event.inputs.worker_api_url != '' }}
+        run: |
+          curl -s -X POST \
+            "${{ github.event.inputs.worker_api_url }}/api/jobs/${{ github.event.inputs.job_id }}/callback" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ github.event.inputs.job_token }}" \
+            -d '{"status":"running"}' || echo "Callback failed (non-fatal)"
+
       - name: Run Daily Intelligence Pipeline
+        id: pipeline
         env:
-          SIGNALBRIEF_API_URL: ${{ secrets.SIGNALBRIEF_API_URL || 'https://signalbrief-worker.workers.dev' }}
+          SIGNALBRIEF_API_URL: ${{ secrets.SIGNALBRIEF_API_URL || vars.SIGNALBRIEF_API_URL || github.event.inputs.worker_api_url || 'https://signalbrief-worker.workers.dev' }}
           SIGNALBRIEF_INTERNAL_KEY: ${{ secrets.SIGNALBRIEF_INTERNAL_KEY }}
           SIGNALBRIEF_DISPATCH_EMAIL: ${{ github.event.inputs.dispatch_email || 'false' }}
+          PIPELINE_JOB_ID: ${{ github.event.inputs.job_id }}
+          PIPELINE_JOB_TOKEN: ${{ github.event.inputs.job_token }}
+          PIPELINE_WORKER_URL: ${{ github.event.inputs.worker_api_url || secrets.SIGNALBRIEF_API_URL || vars.SIGNALBRIEF_API_URL || '' }}
         run: |
           DOMAIN="${{ github.event.inputs.domain || 'manufacturing' }}"
           SYNC_FLAG=""
@@ -59,8 +83,21 @@ jobs:
           if [ "${{ github.event.inputs.dispatch_email }}" = "true" ]; then
             EMAIL_FLAG="--dispatch-email"
           fi
-          
-          python scripts/run_daily_brief.py --domain "$DOMAIN" $SYNC_FLAG $EMAIL_FLAG
+          JOB_FLAGS=""
+          if [ -n "${{ github.event.inputs.job_id }}" ]; then
+            JOB_FLAGS="--job-id ${{ github.event.inputs.job_id }} --job-token ${{ github.event.inputs.job_token }}"
+          fi
+          WORKER_URL_FLAG=""
+          if [ -n "${PIPELINE_WORKER_URL}" ]; then
+            WORKER_URL_FLAG="--worker-url ${PIPELINE_WORKER_URL}"
+          fi
+
+          python scripts/run_daily_brief.py \
+            --domain "$DOMAIN" \
+            $SYNC_FLAG \
+            $EMAIL_FLAG \
+            $JOB_FLAGS \
+            $WORKER_URL_FLAG
 
       - name: Upload Generated Reports Artifacts
         uses: actions/upload-artifact@v4

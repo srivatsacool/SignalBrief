@@ -11,7 +11,12 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Support manual trigger endpoint from scheduler
+    // Route POST /trigger to API worker for real job lifecycle & dispatch
+    if (url.pathname === "/trigger" && request.method === "POST") {
+      return await apiWorker.fetch(request, env, ctx);
+    }
+
+    // Support manual GET trigger / status endpoint from scheduler
     if (url.pathname === "/trigger") {
       return await schedulerWorker.fetch(request, env, ctx);
     }

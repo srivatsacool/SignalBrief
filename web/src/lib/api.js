@@ -5,8 +5,9 @@
 
 export const API_BASE = (
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.PUBLIC_API_URL) ||
-  (typeof window !== "undefined" && window.location.origin) ||
-  "http://localhost:8787"
+  (typeof window !== "undefined" && window.location.hostname.includes("pages.dev")
+    ? "https://signalbrief-worker.srivatsagorti.workers.dev"
+    : (typeof window !== "undefined" ? window.location.origin : "https://signalbrief-worker.srivatsagorti.workers.dev"))
 ).replace(/\/$/, "");
 
 async function fetchJson(endpoint, options = {}) {

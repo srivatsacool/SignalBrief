@@ -1,7 +1,7 @@
 """Evidence-grounded intelligence summarizer and 5-part framework for daily briefs."""
 
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from signalbrief.analytics.entities import extract_entities
 from signalbrief.preprocessing.cleaning import JOURNALISTIC_STOPWORDS

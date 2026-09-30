@@ -27,6 +27,9 @@ def sync_report_to_cloudflare(
     articles_collected: int = 0,
     articles_processed: int = 0,
     duration_seconds: float = 0.0,
+    job_id: Optional[str] = None,
+    relevant_articles: int = 0,
+    clusters_formed: int = 0,
     max_retries: int = 3,
     timeout_sec: int = 30,
 ) -> Dict[str, Any]:
@@ -69,7 +72,10 @@ def sync_report_to_cloudflare(
         "dispatch_email": dispatch_email,
         "articles_collected": articles_collected,
         "articles_processed": articles_processed,
+        "relevant_articles": relevant_articles,
+        "clusters_formed": clusters_formed,
         "duration_seconds": duration_seconds,
+        "job_id": job_id,
     }
 
     last_error = None

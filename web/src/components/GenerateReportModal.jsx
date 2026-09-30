@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { API_BASE } from '../lib/api.js';
 
@@ -34,15 +34,32 @@ const TOPIC_CHIPS = [
 ];
 
 const PIPELINE_STAGES = [
-  { num: 1, label: "Initializing topics",      count: (s) => `${s.topics}/3`,           hasBar: false },
-  { num: 2, label: "Collecting sources",        count: (s) => `${s.sources}/42`,         hasBar: false },
-  { num: 3, label: "Scraping articles",         count: (s) => `${s.scraped}/${s.total}`, hasBar: true  },
-  { num: 4, label: "Filtering & deduplicating", count: () => "—",                        hasBar: false },
-  { num: 5, label: "Analyzing with AI",         count: () => "—",                        hasBar: false },
-  { num: 6, label: "Generating summary",        count: () => "—",                        hasBar: false },
-  { num: 7, label: "Creating report",           count: () => "—",                        hasBar: false },
-  { num: 8, label: "Finalizing",                count: () => "—",                        hasBar: false },
+  { num: 1, label: "Job Queued & Dispatched", count: (j) => j?.id ? `ID: ${j.id.slice(-8)}` : "—", desc: "Registered in D1 & sent to runner" },
+  { num: 2, label: "Scanning Feeds & Sources", count: (j) => j?.sources_total > 0 ? `${j.sources_total} sources` : "42 sources", desc: "Discovering active RSS feeds" },
+  { num: 3, label: "Scraping & Ingesting Articles", count: (j) => `${j?.articles_collected || 0} articles`, hasBar: true, desc: "Fetching full article texts" },
+  { num: 4, label: "Filtering & Deduplication", count: (j) => j?.articles_processed > 0 ? `${j.articles_processed} passed` : "—", desc: "SimHash & content cleanup" },
+  { num: 5, label: "AI Analysis & Semantic Scoring", count: (j) => j?.relevant_articles > 0 ? `${j.relevant_articles} relevant` : "—", desc: "Evaluating strategic relevance" },
+  { num: 6, label: "Clustering & Ranking Signals", count: (j) => j?.clusters_formed > 0 ? `${j.clusters_formed} clusters` : "—", desc: "Synthesizing core developments" },
+  { num: 7, label: "HTML & Brief Rendering", count: (j) => j?.report_id ? "Done" : "—", desc: "Building executive briefing" },
+  { num: 8, label: "Cloud Sync & Storage", count: (j) => j?.status === "completed" ? "Verified" : "—", desc: "Persisting to R2 & D1" },
 ];
+
+function calculateActiveStage(job) {
+  if (!job) return 1;
+  if (job.status === "completed") return 8;
+  if (job.status === "failed") return -1;
+  if (job.status === "partial") return 8;
+  if (job.status === "queued") return 1;
+  if (job.report_id) return 7;
+  if (job.clusters_formed > 0) return 6;
+  if (job.relevant_articles > 0) return 5;
+  if (job.articles_processed > 0) return 4;
+  if (job.articles_collected > 0) return 3;
+  return 2; // running, discovering sources
+}
+
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_TIME_MS = 25 * 60 * 1000; // 25 minutes max
 
 export default function GenerateReportModal() {
   const [mounted, setMounted] = useState(false);
@@ -57,24 +74,70 @@ export default function GenerateReportModal() {
   const [format, setFormat] = useState("html");
   const [depth, setDepth] = useState("standard");
 
-  const [liveStage, setLiveStage] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
   const [error, setError] = useState(null);
   const [latestReportId, setLatestReportId] = useState(null);
 
-  // Live telemetry — populated from real Worker API
-  const [telemetry, setTelemetry] = useState({
-    topics: 0, sources: 0, scraped: 0, total: 128, relevant: 0, insights: 0,
-  });
+  // Active Job Telemetry
+  const [currentJob, setCurrentJob] = useState(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [dispatchInfo, setDispatchInfo] = useState(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  const pollTimerRef = useRef(null);
+  const elapsedTimerRef = useRef(null);
+  const pollStartRef = useRef(null);
 
   useEffect(() => {
-    const handleKeyDown = (e) => { if (e.key === 'Escape' && isOpen) setIsOpen(false); };
+    setMounted(true);
+    // Check if there was an active job stored in localStorage
+    try {
+      const savedJobId = localStorage.getItem("signalbrief_active_job_id");
+      if (savedJobId) {
+        checkExistingJob(savedJobId);
+      }
+    } catch (_) {}
+  }, []);
+
+  const checkExistingJob = async (jobId) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
+      if (res.ok) {
+        const job = await res.json();
+        if (job.status === "running" || job.status === "queued") {
+          setCurrentJob(job);
+        }
+      }
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && !isGenerating) setIsOpen(false);
+    };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, isGenerating]);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    };
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
+  }, []);
 
   const toggleTopic = (id) => {
     if (id === "world_macro") return;
@@ -92,83 +155,129 @@ export default function GenerateReportModal() {
     t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Fetch live telemetry from the real Worker
-  const fetchTelemetry = async () => {
+  // Poll job status from Worker
+  const pollJobStatus = useCallback(async (jobId) => {
     try {
-      const res = await fetch(`${API_BASE}/api/pipeline/telemetry`);
-      if (res.ok) {
-        const data = await res.json();
-        setTelemetry(prev => ({
-          ...prev,
-          sources:  data.pages_chosen     || prev.sources,
-          scraped:  data.articles_scraped || prev.scraped,
-          total:    data.articles_scraped || prev.total,
-          relevant: Math.round((data.articles_scraped || 0) * 0.72),
-          insights: data.clusters_formed  || prev.insights,
-        }));
+      const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
+      if (!res.ok) {
+        // If 404 yet, runner might still be inserting or API temporarily warming
+        return;
       }
-    } catch (_) { /* silently keep existing values */ }
-  };
+      const job = await res.json();
+      setCurrentJob(job);
 
-  const animateStages = async () => {
-    const delays = [600, 700, 1200, 900, 1100, 900, 800, 600];
-    for (let i = 0; i < delays.length; i++) {
-      setLiveStage(i + 1);
-      setTelemetry(prev => ({
-        ...prev,
-        topics:  Math.min(3, i + 1),
-        sources: i >= 1 ? 42 : prev.sources,
-      }));
-      await new Promise(r => setTimeout(r, delays[i]));
-      if (i === 2 || i === 5) await fetchTelemetry();
+      if (job.status === "completed") {
+        stopPolling();
+        setIsGenerating(false);
+        setIsCompleted(true);
+        if (job.report_id) {
+          setLatestReportId(job.report_id);
+        }
+        try { localStorage.removeItem("signalbrief_active_job_id"); } catch (_) {}
+      } else if (job.status === "failed") {
+        stopPolling();
+        setIsGenerating(false);
+        setIsFailed(true);
+        setError(job.error_message || "Pipeline execution encountered an error on the runner.");
+        try { localStorage.removeItem("signalbrief_active_job_id"); } catch (_) {}
+      } else if (job.status === "partial") {
+        stopPolling();
+        setIsGenerating(false);
+        setIsCompleted(true);
+        if (job.report_id) setLatestReportId(job.report_id);
+        try { localStorage.removeItem("signalbrief_active_job_id"); } catch (_) {}
+      }
+
+      // Check max poll time
+      if (Date.now() - pollStartRef.current > MAX_POLL_TIME_MS) {
+        stopPolling();
+        setIsGenerating(false);
+        setError("Pipeline job is taking longer than expected. You can check back later or verify GitHub Actions.");
+      }
+    } catch (err) {
+      console.warn("[SignalBrief Job Poll Warning]:", err.message);
     }
-  };
+  }, [stopPolling]);
 
+  // Start Generation: dispatches real job and starts polling
   const handleStartGeneration = async () => {
     setActiveStep(3);
     setIsGenerating(true);
     setIsCompleted(false);
+    setIsFailed(false);
     setError(null);
-    setLiveStage(1);
-    setTelemetry({ topics: 1, sources: 0, scraped: 0, total: 128, relevant: 0, insights: 0 });
+    setElapsedSeconds(0);
+    pollStartRef.current = Date.now();
 
     const domain = selectedTopics.find(t => t !== "world_macro") || "manufacturing";
 
+    // Start elapsed timer
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
+    }, 1000);
+
     try {
-      // 1. Fire the real pipeline trigger on the Worker
-      const triggerRes = await fetch(`${API_BASE}/trigger?domain=${encodeURIComponent(domain)}`, {
+      // 1. Post to real Worker endpoint
+      const triggerRes = await fetch(`${API_BASE}/api/jobs`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          domain,
+          topics: selectedTopics,
+          recency,
+          depth,
+          format,
+        }),
       });
-      const triggerData = await triggerRes.json().catch(() => ({}));
-      console.log("[SignalBrief] Worker trigger:", triggerData);
 
-      // 2. Animate pipeline stages + live telemetry polling concurrently
-      await animateStages();
+      if (!triggerRes.ok) {
+        throw new Error(`Server returned HTTP ${triggerRes.status}`);
+      }
 
-      // 3. Fetch latest report ID for navigation
+      const jobData = await triggerRes.json();
+      const jobId = jobData.job_id;
+
+      if (!jobId) {
+        throw new Error("API response did not return a valid job ID.");
+      }
+
+      setCurrentJob({
+        id: jobId,
+        status: jobData.status || "queued",
+        domain_id: domain,
+        sources_total: selectedTopics.length * 14,
+        articles_collected: 0,
+        articles_processed: 0,
+        relevant_articles: 0,
+        clusters_formed: 0,
+      });
+
+      setDispatchInfo(jobData.dispatch || null);
+
       try {
-        const rRes = await fetch(`${API_BASE}/api/reports/latest?domain=${encodeURIComponent(domain)}`);
-        if (rRes.ok) {
-          const rData = await rRes.json();
-          if (rData.id) setLatestReportId(rData.id);
-        }
+        localStorage.setItem("signalbrief_active_job_id", jobId);
       } catch (_) {}
 
-      await fetchTelemetry();
+      // 2. Start polling for real status updates
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      pollTimerRef.current = setInterval(() => {
+        pollJobStatus(jobId);
+      }, POLL_INTERVAL_MS);
 
     } catch (err) {
-      console.warn("[SignalBrief] Worker unreachable — demo mode:", err.message);
-      // Graceful fallback with realistic demo values
-      setTelemetry({ topics: 3, sources: 42, scraped: 128, total: 128, relevant: 37, insights: 12 });
+      console.error("[SignalBrief Trigger Error]:", err);
+      stopPolling();
+      setIsGenerating(false);
+      setIsFailed(true);
+      setError(`Failed to dispatch pipeline: ${err.message}. Ensure the API Worker is reachable at ${API_BASE}.`);
     }
-
-    setIsGenerating(false);
-    setIsCompleted(true);
   };
 
   const handleFinish = () => {
     setIsOpen(false);
     setIsCompleted(false);
+    setIsFailed(false);
     setActiveStep(1);
     if (latestReportId) {
       window.location.href = `/report/${latestReportId}`;
@@ -177,11 +286,30 @@ export default function GenerateReportModal() {
     }
   };
 
+  const handleRetry = () => {
+    setIsFailed(false);
+    setError(null);
+    handleStartGeneration();
+  };
+
+  const activeStage = calculateActiveStage(currentJob);
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   return (
     <>
       <button
         type="button"
-        onClick={() => { setIsOpen(true); setActiveStep(1); setIsCompleted(false); setError(null); }}
+        onClick={() => {
+          setIsOpen(true);
+          if (!isGenerating && !isCompleted) {
+            setActiveStep(1);
+            setError(null);
+          }
+        }}
         className="px-4 py-2.5 rounded-lg bg-[#E5A93C] hover:bg-[#d89729] text-[#090A0F] font-bold text-xs flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(229,169,60,0.3)] hover:shadow-[0_0_20px_rgba(229,169,60,0.5)] cursor-pointer"
       >
         <span className="text-sm font-extrabold leading-none">+</span>
@@ -191,7 +319,7 @@ export default function GenerateReportModal() {
       {isOpen && mounted && createPortal(
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-150"
-          onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget && !isGenerating) setIsOpen(false); }}
         >
           <div
             className="relative w-full max-w-4xl bg-[#0D0E12] border border-[#21232B] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
@@ -207,15 +335,19 @@ export default function GenerateReportModal() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-[#F4F5F7]">
-                    {activeStep === 3 ? "Generating Your Brief" : "Create a New Brief"}
+                    {activeStep === 3 ? "Pipeline Execution Telemetry" : "Create a New Brief"}
                   </h2>
                   <p className="text-xs text-[#9299A8] mt-0.5">
                     {activeStep === 1 && "Select topics you're interested in. Default is all topics worldwide."}
                     {activeStep === 2 && "Select analysis recency, summary depth, and output formatting."}
                     {activeStep === 3 && (
-                      <span className="flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full inline-block ${isCompleted ? 'bg-[#18D69A]' : 'bg-[#E5A93C] animate-pulse'}`}></span>
-                        {isCompleted ? "Pipeline dispatched — connected to Worker" : `Calling ${API_BASE}`}
+                      <span className="flex items-center gap-1.5 font-mono">
+                        <span className={`w-1.5 h-1.5 rounded-full inline-block ${
+                          isCompleted ? 'bg-[#18D69A]' : isFailed ? 'bg-[#FF6B6B]' : 'bg-[#E5A93C] animate-pulse'
+                        }`}></span>
+                        {isCompleted && "Pipeline completed successfully — verified 100% primary sources"}
+                        {isFailed && "Pipeline execution failed"}
+                        {isGenerating && `Active Job: ${currentJob?.id || 'Initializing...'} • Elapsed: ${formatTime(elapsedSeconds)}`}
                       </span>
                     )}
                   </p>
@@ -262,7 +394,7 @@ export default function GenerateReportModal() {
                     <div className="text-sm font-bold text-white font-mono">
                       {selectedTopics.length} <span className="text-xs text-[#9299A8]">/ {TOPIC_CHIPS.length}</span>
                     </div>
-                    <div className="text-[10px] text-[#18D69A] leading-tight">● World Macro Included</div>
+                    <div className="text-[10px] text-[#18D69A] leading-tight font-mono">● World Macro Included</div>
                   </div>
                 </div>
 
@@ -340,9 +472,11 @@ export default function GenerateReportModal() {
                           ))}
                         </div>
                         <div className="bg-[#121318] p-4 rounded-xl border border-[#21232B] text-xs font-mono text-[#9299A8] space-y-1.5">
-                          <div className="text-white font-bold">Summary of Run Parameters</div>
-                          <div>Selected: <strong className="text-[#E5A93C]">{selectedTopics.length}</strong> topics across industrial and macroeconomic dimensions.</div>
-                          <div className="text-[11px] text-[#626B7B]">Will POST to <span className="text-[#E5A93C]">{API_BASE}/trigger</span></div>
+                          <div className="text-white font-bold">Execution Architecture Overview</div>
+                          <div>Target: <strong className="text-[#E5A93C]">{selectedTopics.length}</strong> topics across industrial intelligence domains.</div>
+                          <div className="text-[11px] text-[#626B7B]">
+                            Asynchronous dispatch: Workers API queues a verifiable job in D1 and dispatches the GitHub Actions runner. Progress updates stream in real time.
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t border-[#21232B] mt-auto">
@@ -357,19 +491,49 @@ export default function GenerateReportModal() {
               </div>
             )}
 
-            {/* STEP 3: Live Pipeline */}
+            {/* STEP 3: Live Pipeline Telemetry */}
             {activeStep === 3 && (
               <div className="p-6 space-y-6 flex flex-col flex-1">
+                {/* Pipeline Banner */}
+                <div className="bg-[#121318] border border-[#21232B] rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#626B7B]">JOB ID:</span>
+                    <span className="text-white font-bold bg-[#090A0F] px-2 py-0.5 rounded border border-[#21232B]">
+                      {currentJob?.id || "Queuing..."}
+                    </span>
+                    <span className="text-[#626B7B] ml-2">STATUS:</span>
+                    <span className={`px-2 py-0.5 rounded text-[11px] uppercase font-bold ${
+                      currentJob?.status === "completed" ? "bg-[#18D69A]/10 text-[#18D69A] border border-[#18D69A]/30" :
+                      currentJob?.status === "failed" ? "bg-[#FF6B6B]/10 text-[#FF6B6B] border border-[#FF6B6B]/30" :
+                      currentJob?.status === "running" ? "bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/30 animate-pulse" :
+                      "bg-[#E5A93C]/10 text-[#E5A93C] border border-[#E5A93C]/30"
+                    }`}>
+                      {currentJob?.status || "queued"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-[#9299A8]">
+                    <span>Elapsed: <strong className="text-white">{formatTime(elapsedSeconds)}</strong></span>
+                    {dispatchInfo?.dispatched && (
+                      <span className="text-[#18D69A] text-[11px]">✓ GitHub Actions Dispatched</span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* Stages Timeline */}
                   <div className="md:col-span-8 space-y-3 font-mono text-xs">
                     {PIPELINE_STAGES.map((st) => {
-                      const isPast = liveStage > st.num || isCompleted;
-                      const isCurrent = liveStage === st.num && !isCompleted;
+                      const isPast = activeStage > st.num || isCompleted;
+                      const isCurrent = activeStage === st.num && !isCompleted && !isFailed;
+                      const isFailedStage = isFailed && activeStage === st.num;
+
                       return (
                         <div key={st.num} className="space-y-1">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2.5">
-                              {isPast ? (
+                              {isFailedStage ? (
+                                <span className="w-4 h-4 rounded-full bg-[#FF6B6B] text-white font-bold flex items-center justify-center text-[10px]">✕</span>
+                              ) : isPast ? (
                                 <span className="w-4 h-4 rounded-full bg-[#18D69A] text-[#090A0F] font-bold flex items-center justify-center text-[10px]">✓</span>
                               ) : isCurrent ? (
                                 <span className="w-4 h-4 rounded-full bg-[#E5A93C] text-[#090A0F] font-bold flex items-center justify-center text-[10px] animate-pulse">●</span>
@@ -380,13 +544,13 @@ export default function GenerateReportModal() {
                                 {st.label}
                               </span>
                             </div>
-                            <span className="text-[11px] text-[#626B7B]">{st.count(telemetry)}</span>
+                            <span className="text-[11px] text-[#626B7B]">{st.count(currentJob)}</span>
                           </div>
                           {st.hasBar && isCurrent && (
                             <div className="w-full bg-[#121318] rounded-full h-1 overflow-hidden ml-6">
                               <div
                                 className="bg-[#E5A93C] h-1 transition-all duration-500 shadow-[0_0_8px_#E5A93C]"
-                                style={{ width: `${Math.min(100, telemetry.total > 0 ? (telemetry.scraped / telemetry.total) * 100 : 0)}%` }}
+                                style={{ width: `${Math.min(100, (currentJob?.articles_collected || 0) > 0 ? ((currentJob?.articles_collected || 0) / (currentJob?.sources_total || 42)) * 100 : 25)}%` }}
                               />
                             </div>
                           )}
@@ -395,13 +559,13 @@ export default function GenerateReportModal() {
                     })}
                   </div>
 
-                  {/* Live metric cards — real Worker data */}
+                  {/* Real-time Metric Cards */}
                   <div className="md:col-span-4 space-y-2.5 font-mono">
                     {[
-                      { icon: "🌐", color: "#32B8F4", value: telemetry.sources || 42,  label: "Sources Selected"  },
-                      { icon: "📄", color: "#3B82F6", value: telemetry.scraped,         label: "Articles Scraped"  },
-                      { icon: "🎯", color: "#18D69A", value: telemetry.relevant,        label: "Relevant Articles" },
-                      { icon: "💡", color: "#E5A93C", value: telemetry.insights,        label: "Key Insights"      },
+                      { icon: "🌐", color: "#32B8F4", value: currentJob?.sources_total || (selectedTopics.length * 14) || 42, label: "Sources Selected"  },
+                      { icon: "📄", color: "#3B82F6", value: currentJob?.articles_collected || 0,                            label: "Articles Scraped"  },
+                      { icon: "🎯", color: "#18D69A", value: currentJob?.relevant_articles || currentJob?.articles_processed || 0, label: "Relevant Articles" },
+                      { icon: "💡", color: "#E5A93C", value: currentJob?.clusters_formed || 0,                               label: "Key Insights"      },
                     ].map((card) => (
                       <div key={card.label} className="bg-[#121318] border border-[#21232B] rounded-xl p-3 flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0"
@@ -414,18 +578,35 @@ export default function GenerateReportModal() {
                         </div>
                       </div>
                     ))}
+
+                    {/* Telemetry info callout */}
+                    <div className="p-3 bg-[#0A0B0E] border border-[#21232B] rounded-xl text-[11px] font-mono text-[#626B7B] space-y-1">
+                      <div className="text-[#9299A8] font-bold">Telemetry Source</div>
+                      <div>Streamed directly from Cloudflare D1 and GitHub Actions runner callback.</div>
+                    </div>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="text-xs font-mono text-[#FF6B6B] bg-[#FF6B6B]/10 border border-[#FF6B6B]/20 rounded-lg px-3 py-2">⚠ {error}</div>
+                  <div className="text-xs font-mono text-[#FF6B6B] bg-[#FF6B6B]/10 border border-[#FF6B6B]/20 rounded-lg p-3 flex items-start gap-2">
+                    <span className="shrink-0 font-bold">⚠</span>
+                    <div className="flex-1">
+                      <div className="font-bold">Pipeline Error:</div>
+                      <div>{error}</div>
+                    </div>
+                  </div>
                 )}
 
+                {/* Status-specific Footer Actions */}
                 {isCompleted ? (
                   <div className="pt-4 border-t border-[#21232B] flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-xs font-mono text-[#18D69A]">
                       <span className="w-2 h-2 rounded-full bg-[#18D69A]"></span>
-                      <span>Pipeline dispatched to Worker. 100% verified primary sources.</span>
+                      <span>
+                        {(currentJob?.articles_collected || 0) > 0
+                          ? "Pipeline completed successfully. 100% verified primary sources."
+                          : "Pipeline executed. Report ready."}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <button type="button" onClick={() => { setIsOpen(false); setActiveStep(1); }}
@@ -434,20 +615,40 @@ export default function GenerateReportModal() {
                         className="px-5 py-2 rounded-lg bg-[#E5A93C] hover:bg-[#d89729] text-[#090A0F] font-bold text-xs transition-colors shadow-[0_0_15px_rgba(229,169,60,0.3)] cursor-pointer">View Generated Brief →</button>
                     </div>
                   </div>
+                ) : isFailed ? (
+                  <div className="pt-4 border-t border-[#21232B] flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="text-xs font-mono text-[#FF6B6B]">
+                      Job ended with failure state. View runner logs for forensic details.
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button type="button" onClick={() => { setIsOpen(false); setActiveStep(1); }}
+                        className="px-4 py-2 rounded-lg bg-[#121318] hover:bg-[#161820] border border-[#21232B] text-xs font-mono text-[#9299A8] hover:text-white transition-colors cursor-pointer">Close</button>
+                      <button type="button" onClick={handleRetry}
+                        className="px-5 py-2 rounded-lg bg-[#FF6B6B] hover:bg-[#e05555] text-white font-bold text-xs transition-colors shadow-[0_0_15px_rgba(255,107,107,0.3)] cursor-pointer">Retry Pipeline →</button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="pt-4 border-t border-[#21232B] flex items-center justify-between text-xs font-mono text-[#626B7B]">
-                    <span>Calling <span className="text-[#E5A93C]">{API_BASE}</span>...</span>
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E5A93C] animate-pulse"></span>
+                      <span>
+                        {currentJob?.status === "queued"
+                          ? "Waiting for GitHub Actions runner to pick up job..."
+                          : "Pipeline running in background. Polling D1 telemetry..."}
+                      </span>
+                    </div>
                     <button type="button" onClick={() => setIsOpen(false)}
-                      className="text-[#9299A8] hover:text-white hover:underline cursor-pointer">Minimize & Run in Background</button>
+                      className="text-[#9299A8] hover:text-white hover:underline cursor-pointer">
+                      Minimize & Run in Background
+                    </button>
                   </div>
                 )}
               </div>
             )}
           </div>
-        </div>
+        </div>,
         document.body
       )}
     </>
   );
 }
-

@@ -341,4 +341,85 @@ export class D1Client {
       runData.duration_seconds || 0.0
     ).run();
   }
+
+  // --- Pipeline Job Lifecycle (async user-triggered jobs) ---
+
+  async createJob(jobId, domainId, runDate, triggeredBy = "user", jobToken = null) {
+    // Ensure domain exists
+    const domainName = domainId ? domainId.charAt(0).toUpperCase() + domainId.slice(1) : "Manufacturing";
+    await this.db.prepare(`INSERT OR IGNORE INTO domains (id, name, description) VALUES (?, ?, 'Monitored intelligence domain');`)
+      .bind(domainId, domainName).run();
+
+    const query = `
+      INSERT INTO pipeline_jobs (id, domain_id, run_date, status, triggered_by, job_token, queued_at)
+      VALUES (?, ?, ?, 'queued', ?, ?, datetime('now'))
+      ON CONFLICT(id) DO NOTHING;
+    `;
+    return await this.db.prepare(query).bind(jobId, domainId, runDate, triggeredBy, jobToken).run();
+  }
+
+  async updateJobStatus(jobId, status, metrics = {}) {
+    const {
+      sources_total = null,
+      articles_collected = null,
+      articles_processed = null,
+      relevant_articles = null,
+      clusters_formed = null,
+      report_id = null,
+      error_message = null,
+    } = metrics;
+
+    const setStarted = status === "running" ? `, started_at = datetime('now')` : "";
+    const setCompleted = (status === "completed" || status === "failed" || status === "partial")
+      ? `, completed_at = datetime('now')` : "";
+
+    const query = `
+      UPDATE pipeline_jobs SET
+        status = ?,
+        sources_total = COALESCE(?, sources_total),
+        articles_collected = COALESCE(?, articles_collected),
+        articles_processed = COALESCE(?, articles_processed),
+        relevant_articles = COALESCE(?, relevant_articles),
+        clusters_formed = COALESCE(?, clusters_formed),
+        report_id = COALESCE(?, report_id),
+        error_message = COALESCE(?, error_message)
+        ${setStarted}${setCompleted}
+      WHERE id = ?;
+    `;
+    return await this.db.prepare(query).bind(
+      status,
+      sources_total,
+      articles_collected,
+      articles_processed,
+      relevant_articles,
+      clusters_formed,
+      report_id,
+      error_message,
+      jobId
+    ).run();
+  }
+
+  async getJobById(jobId) {
+    return await this.db.prepare(`SELECT * FROM pipeline_jobs WHERE id = ?`).bind(jobId).first();
+  }
+
+  async getLatestJob(domainId = "manufacturing") {
+    return await this.db.prepare(`
+      SELECT * FROM pipeline_jobs
+      WHERE domain_id = ?
+      ORDER BY queued_at DESC
+      LIMIT 1;
+    `).bind(domainId).first();
+  }
+
+  async getLatestTelemetry(domainId = "manufacturing") {
+    // Return metrics from the most recent completed or running job
+    const job = await this.db.prepare(`
+      SELECT * FROM pipeline_jobs
+      WHERE domain_id = ? AND status IN ('completed','running','partial')
+      ORDER BY queued_at DESC
+      LIMIT 1;
+    `).bind(domainId).first();
+    return job || null;
+  }
 }

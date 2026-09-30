@@ -258,22 +258,173 @@ export default {
         return jsonResponse({ count: 0, logs: [] }, 200, cors);
       }
 
-      // 13. Pipeline Run Telemetry (GET /api/pipeline/telemetry)
+      // 13. Pipeline Telemetry — sourced from real D1 pipeline_jobs records
       if (path === "/api/pipeline/telemetry" && request.method === "GET") {
-        return jsonResponse(
-          {
-            last_run_utc: "02:00:00 UTC",
-            pages_chosen: 18,
-            articles_scraped: 240,
-            duplicates_pruned: 89,
-            clusters_formed: 7,
-            latency_sec: 3.8,
-            citation_coverage: "100%",
-            next_run_countdown_utc: "02:00:00",
-          },
-          200,
-          cors
-        );
+        const domain = url.searchParams.get("domain") || env.DEFAULT_DOMAIN || "manufacturing";
+        if (db) {
+          const job = await db.getLatestTelemetry(domain);
+          if (job) {
+            return jsonResponse({
+              job_id: job.id,
+              status: job.status,
+              domain_id: job.domain_id,
+              run_date: job.run_date,
+              sources_total: job.sources_total || 0,
+              articles_collected: job.articles_collected || 0,
+              articles_processed: job.articles_processed || 0,
+              relevant_articles: job.relevant_articles || 0,
+              clusters_formed: job.clusters_formed || 0,
+              report_id: job.report_id || null,
+              queued_at: job.queued_at,
+              started_at: job.started_at,
+              completed_at: job.completed_at,
+            }, 200, cors);
+          }
+        }
+        // No real jobs yet — return honest zero state
+        return jsonResponse({
+          status: "no_runs",
+          sources_total: 0,
+          articles_collected: 0,
+          articles_processed: 0,
+          relevant_articles: 0,
+          clusters_formed: 0,
+          report_id: null,
+        }, 200, cors);
+      }
+
+      // 13b. Create Pipeline Job (POST /api/jobs or POST /trigger)
+      // Called by GenerateReportModal or external webhook when triggering a run
+      if ((path === "/api/jobs" || path === "/trigger" || path === "/api/pipeline/trigger") && request.method === "POST") {
+        const body = await request.json().catch(() => ({}));
+        const domain = body.domain || url.searchParams.get("domain") || env.DEFAULT_DOMAIN || "manufacturing";
+        const runDate = new Date().toISOString().split("T")[0];
+        const suffix = Math.random().toString(36).substring(2, 8);
+        const jobId = `job_${domain}_${runDate}_${suffix}`;
+
+        // Generate a one-time callback token (HMAC would be ideal; here we use a random secret)
+        const jobToken = `tok_${Math.random().toString(36).substring(2, 18)}_${Date.now()}`;
+
+        if (db) {
+          await db.createJob(jobId, domain, runDate, "user", jobToken);
+        }
+
+        // Dispatch GitHub Actions workflow_dispatch if GH_PAT and GH_REPO are configured
+        let dispatchResult = { dispatched: false };
+        if (env.GH_PAT && env.GH_REPO) {
+          try {
+            const ghRes = await fetch(
+              `https://api.github.com/repos/${env.GH_REPO}/actions/workflows/daily-pipeline.yml/dispatches`,
+              {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${env.GH_PAT}`,
+                  "Accept": "application/vnd.github+json",
+                  "Content-Type": "application/json",
+                  "User-Agent": "SignalBrief-Cloudflare-Worker/1.0",
+                  "X-GitHub-Api-Version": "2022-11-28",
+                },
+                body: JSON.stringify({
+                  ref: env.GH_REF || "master",
+                  inputs: {
+                    domain,
+                    sync_to_cloud: "true",
+                    dispatch_email: "false",
+                    job_id: jobId,
+                    job_token: jobToken,
+                    worker_api_url: env.WORKER_PUBLIC_URL || "",
+                  },
+                }),
+              }
+            );
+            const errText = ghRes.status !== 204 ? await ghRes.text() : "";
+            dispatchResult = {
+              dispatched: ghRes.status === 204,
+              http_status: ghRes.status,
+              ...(errText ? { detail: errText } : {}),
+            };
+          } catch (ghErr) {
+            console.error(`[Job Dispatch] GitHub API error: ${ghErr.message}`);
+            dispatchResult = { dispatched: false, error: ghErr.message };
+          }
+        } else {
+          // GH_PAT not configured — job is queued but won't auto-execute
+          console.warn("[Job Dispatch] GH_PAT or GH_REPO not configured; job queued but not dispatched.");
+          dispatchResult = { dispatched: false, reason: "GH_PAT not configured" };
+        }
+
+        return jsonResponse({
+          job_id: jobId,
+          status: "queued",
+          domain,
+          run_date: runDate,
+          dispatch: dispatchResult,
+          message: dispatchResult.dispatched
+            ? "Pipeline job queued and dispatched to GitHub Actions runner."
+            : "Pipeline job queued. Configure GH_PAT secret to enable automatic dispatch.",
+        }, 201, cors);
+      }
+
+      // 13c. Get Job Status (GET /api/jobs/:id)
+      if (path.startsWith("/api/jobs/") && request.method === "GET" && path.split("/").length === 4) {
+        const jobId = path.split("/")[3];
+        if (!jobId) return jsonResponse({ error: "Missing job ID" }, 400, cors);
+        if (db) {
+          const job = await db.getJobById(jobId);
+          if (job) return jsonResponse(job, 200, cors);
+        }
+        return jsonResponse({ error: "Job not found", job_id: jobId }, 404, cors);
+      }
+
+      // 13d. Job Callback (POST /api/jobs/:id/callback)
+      // Called by GitHub Actions (Python pipeline) to report status updates and final metrics
+      if (path.match(/^\/api\/jobs\/[^/]+\/callback$/) && request.method === "POST") {
+        const pathParts = path.split("/");
+        const jobId = pathParts[3];
+
+        // Validate job_token from Authorization header
+        const authHeader = request.headers.get("Authorization") || "";
+        const providedToken = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+        if (db) {
+          const job = await db.getJobById(jobId);
+          if (!job) return jsonResponse({ error: "Job not found" }, 404, cors);
+
+          // Verify token matches what was issued at job creation
+          if (job.job_token && providedToken !== job.job_token) {
+            return jsonResponse({ error: "Invalid job token" }, 401, cors);
+          }
+
+          const body = await request.json().catch(() => ({}));
+          const {
+            status,
+            sources_total,
+            articles_collected,
+            articles_processed,
+            relevant_articles,
+            clusters_formed,
+            report_id,
+            error_message,
+          } = body;
+
+          const allowedStatuses = ["running", "completed", "failed", "partial"];
+          if (!status || !allowedStatuses.includes(status)) {
+            return jsonResponse({ error: `Invalid status. Must be one of: ${allowedStatuses.join(", ")}` }, 400, cors);
+          }
+
+          await db.updateJobStatus(jobId, status, {
+            sources_total,
+            articles_collected,
+            articles_processed,
+            relevant_articles,
+            clusters_formed,
+            report_id,
+            error_message,
+          });
+
+          return jsonResponse({ success: true, job_id: jobId, status }, 200, cors);
+        }
+        return jsonResponse({ error: "Database not available" }, 503, cors);
       }
 
       // 14. Internal Ingestion Endpoint (POST /api/internal/report)
@@ -345,6 +496,16 @@ export default {
             emails_sent: 0,
             duration_seconds: body.duration_seconds || 0.0,
           });
+          // Update job record if a job_id was provided
+          if (body.job_id) {
+            await db.updateJobStatus(body.job_id, "completed", {
+              articles_collected: body.articles_collected || report.article_count || 0,
+              articles_processed: body.articles_processed || report.article_count || 0,
+              relevant_articles: body.relevant_articles || 0,
+              clusters_formed: body.clusters_formed || 0,
+              report_id: report.id,
+            });
+          }
         }
 
         // Optional email dispatch

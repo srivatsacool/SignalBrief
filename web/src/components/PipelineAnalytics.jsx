@@ -1,6 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../lib/api.js';
 
 export default function PipelineAnalytics({ runId = "SB-20260929-001" }) {
+  const [stats, setStats] = useState({
+    runId: runId,
+    sources: 42,
+    articles: 128,
+    relevant: 37,
+    insights: 12,
+    isLive: false,
+  });
+
+  useEffect(() => {
+    async function loadTelemetry() {
+      try {
+        const res = await fetch(`${API_BASE}/api/pipeline/telemetry`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status !== "no_runs" && data.articles_collected > 0) {
+            setStats({
+              runId: data.job_id || runId,
+              sources: data.sources_total || 42,
+              articles: data.articles_collected || 0,
+              relevant: data.relevant_articles || data.articles_processed || 0,
+              insights: data.clusters_formed || 0,
+              isLive: true,
+            });
+          }
+        }
+      } catch (_) {}
+    }
+    loadTelemetry();
+  }, [runId]);
+
   const sourcesByType = [
     { label: "RSS Feeds", pct: 45, color: "#32B8F4" },
     { label: "News APIs", pct: 25, color: "#3B82F6" },
@@ -35,9 +67,15 @@ export default function PipelineAnalytics({ runId = "SB-20260929-001" }) {
           </p>
         </div>
 
-        <div className="text-right">
+        <div className="text-right flex items-center justify-end gap-2">
+          {stats.isLive && (
+            <span className="flex items-center gap-1 font-mono text-[10px] text-[#18D69A] bg-[#18D69A]/10 border border-[#18D69A]/20 px-2 py-1 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#18D69A] animate-pulse"></span>
+              LIVE D1
+            </span>
+          )}
           <span className="font-mono text-xs text-[#9299A8] bg-[#121318] px-3 py-1.5 rounded-lg border border-[#21232B]">
-            Run ID: <strong className="text-white">{runId}</strong>
+            Run ID: <strong className="text-white">{stats.runId}</strong>
           </span>
         </div>
       </div>
@@ -51,7 +89,7 @@ export default function PipelineAnalytics({ runId = "SB-20260929-001" }) {
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-white font-mono">42</div>
+            <div className="text-2xl font-bold text-white font-mono">{stats.sources}</div>
             <div className="text-[11px] text-[#9299A8] font-mono">Sources Selected</div>
           </div>
         </div>
@@ -63,7 +101,7 @@ export default function PipelineAnalytics({ runId = "SB-20260929-001" }) {
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-white font-mono">128</div>
+            <div className="text-2xl font-bold text-white font-mono">{stats.articles}</div>
             <div className="text-[11px] text-[#9299A8] font-mono">Articles Scraped</div>
           </div>
         </div>
@@ -75,7 +113,7 @@ export default function PipelineAnalytics({ runId = "SB-20260929-001" }) {
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-white font-mono">37</div>
+            <div className="text-2xl font-bold text-white font-mono">{stats.relevant}</div>
             <div className="text-[11px] text-[#9299A8] font-mono">Relevant</div>
           </div>
         </div>
@@ -87,7 +125,7 @@ export default function PipelineAnalytics({ runId = "SB-20260929-001" }) {
             </svg>
           </div>
           <div>
-            <div className="text-2xl font-bold text-white font-mono">12</div>
+            <div className="text-2xl font-bold text-white font-mono">{stats.insights}</div>
             <div className="text-[11px] text-[#9299A8] font-mono">Key Insights</div>
           </div>
         </div>
