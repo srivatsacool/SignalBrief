@@ -1,0 +1,182 @@
+[
+  {
+    "id": "case_01",
+    "theme_label": "Capital Investment",
+    "centroid_title": "Lego breaks ground on $400M Virginia plant expansion as U.S. packaging line goes live",
+    "expected_event_type": "CAPITAL_EXPANSION",
+    "member_articles": [
+      {
+        "id": "art_lego_1",
+        "source_id": "manufacturing_dive",
+        "title": "Lego breaks ground on $400M Virginia plant expansion as U.S. packaging line goes live",
+        "clean_text": "Lego announced on Tuesday it has broken ground on a $400M plant expansion in Chesterfield County, Virginia, as its initial U.S. packaging and molding operations begin operations to meet North American holiday demand.",
+        "url": "https://www.manufacturingdive.com/news/lego-breaks-ground-400m-plant-virginia/831400/",
+        "subtopic": "production_technology"
+      }
+    ],
+    "expected_entities": ["Lego", "Chesterfield County", "Virginia"],
+    "expected_metrics": ["$400M"]
+  },
+  {
+    "id": "case_02",
+    "theme_label": "Federal Grants",
+    "centroid_title": "NIST Awards More Than $30 Million for MEP Centers in 11 States and Puerto Rico",
+    "expected_event_type": "CAPITAL_EXPANSION",
+    "member_articles": [
+      {
+        "id": "art_nist_30m",
+        "source_id": "nist_manufacturing",
+        "title": "NIST Awards More Than $30 Million for MEP Centers in 11 States and Puerto Rico",
+        "clean_text": "The National Institute of Standards and Technology announced awards totaling more than $30 million for Manufacturing Extension Partnership centers across 11 states to help small and medium manufacturers upgrade automation equipment.",
+        "url": "https://www.nist.gov/news-events/news/2026/09/nist-awards-more-30-million-mep-centers-11-states-and-puerto-rico",
+        "subtopic": "standards_governance"
+      }
+    ],
+    "expected_entities": ["NIST"],
+    "expected_metrics": ["$30 million", "$30 Million"]
+  },
+  {
+    "id": "case_03",
+    "theme_label": "Supply Chain Logistics",
+    "centroid_title": "USPS warns of Indianapolis and Louisville processing delays due to automated facility upgrades",
+    "expected_event_type": "SUPPLY_CHAIN_LOGISTICS",
+    "member_articles": [
+      {
+        "id": "art_usps_1",
+        "source_id": "supply_chain_dive",
+        "title": "USPS warns of Indianapolis and Louisville processing delays due to automated facility upgrades",
+        "clean_text": "The United States Postal Service issued an operational advisory warning shippers of transit delays across its Indianapolis and Louisville processing facilities as automated package sortation systems are installed under the Delivering for America plan.",
+        "url": "https://www.supplychaindive.com/news/usps-delays-facility-upgrades-indianapolis-louisville/831350/",
+        "subtopic": "supply_chain_resilience"
+      }
+    ],
+    "expected_entities": ["USPS", "Indianapolis", "Louisville"],
+    "expected_metrics": []
+  },
+  {
+    "id": "case_04",
+    "theme_label": "Industrial AI",
+    "centroid_title": "Automated vision inspection reduces defect rates by 42% on Tier-1 automotive assembly lines",
+    "expected_event_type": "AUTOMATION_TECH",
+    "member_articles": [
+      {
+        "id": "art_ai_vision",
+        "source_id": "the_robot_report",
+        "title": "Automated vision inspection reduces defect rates by 42% on Tier-1 automotive assembly lines",
+        "clean_text": "Automotive parts suppliers implemented deep learning edge cameras across body-in-white welding lines, reducing scrap rates by 42% and eliminating manual end-of-line acoustic checks.",
+        "url": "https://www.therobotreport.com/news/vision-inspection-defect-reduction-automotive-2026/",
+        "subtopic": "industrial_ai"
+      }
+    ],
+    "expected_entities": [],
+    "expected_metrics": ["42%"]
+  },
+  {
+    "id": "case_05",
+    "theme_label": "Cybersecurity Standards",
+    "centroid_title": "NIST finalizes mandatory cybersecurity guidelines for defense supply chain contractors",
+    "expected_event_type": "REGULATORY_POLICY",
+    "member_articles": [
+      {
+        "id": "art_nist_cyber",
+        "source_id": "nist_manufacturing",
+        "title": "NIST finalizes mandatory cybersecurity guidelines for defense supply chain contractors",
+        "clean_text": "NIST released the definitive SP 800-171 Rev. 3 standard establishing strict token authentication and continuous telemetry mandates for all subcontractors handling controlled unclassified information.",
+        "url": "https://www.nist.gov/news-events/news/2026/09/nist-finalizes-guidelines-protecting-online-identity-and-access-tokens",
+        "subtopic": "standards_governance"
+      }
+    ],
+    "expected_entities": ["NIST"],
+    "expected_metrics": []
+  },
+  {
+    "id": "case_06",
+    "theme_label": "Maritime Freight",
+    "centroid_title": "West Coast port dwell times decline to 3.2 days following automated rail transfer terminal opening",
+    "expected_event_type": "SUPPLY_CHAIN_LOGISTICS",
+    "member_articles": [
+      {
+        "id": "art_port_rail",
+        "source_id": "supply_chain_dive",
+        "title": "West Coast port dwell times decline to 3.2 days following automated rail transfer terminal opening",
+        "clean_text": "Container turnaround velocity reached a 14-month best as on-dock intermodal rail connections cut average container dwell from 5.4 days to 3.2 days at the Port of Long Beach.",
+        "url": "https://www.supplychaindive.com/news/west-coast-port-dwell-times-rail-automation/831388/",
+        "subtopic": "supply_chain_resilience"
+      }
+    ],
+    "expected_entities": ["Port of Long Beach"],
+    "expected_metrics": []
+  },
+  {
+    "id": "case_07",
+    "theme_label": "Warehouse Automation",
+    "centroid_title": "Amazon deploys fleet of 1,200 autonomous mobile robots across three regional fulfillment centers",
+    "expected_event_type": "AUTOMATION_TECH",
+    "member_articles": [
+      {
+        "id": "art_amr_amz",
+        "source_id": "the_robot_report",
+        "title": "Amazon deploys fleet of 1,200 autonomous mobile robots across three regional fulfillment centers",
+        "clean_text": "Amazon Robotics rolled out 1,200 Proteus autonomous mobile robots across facilities in Ohio and Pennsylvania, automating cart movement and raising dock-to-stow throughput by 28%.",
+        "url": "https://www.therobotreport.com/news/amazon-proteus-robot-rollout-regional-hubs/831412/",
+        "subtopic": "industrial_ai"
+      }
+    ],
+    "expected_entities": ["Amazon"],
+    "expected_metrics": ["28%"]
+  },
+  {
+    "id": "case_08",
+    "theme_label": "Chemical Regulations",
+    "centroid_title": "EPA proposes strict limits on PFAS compounds in industrial wastewater discharges",
+    "expected_event_type": "REGULATORY_POLICY",
+    "member_articles": [
+      {
+        "id": "art_epa_pfas",
+        "source_id": "manufacturing_dive",
+        "title": "EPA proposes strict limits on PFAS compounds in industrial wastewater discharges",
+        "clean_text": "The Environmental Protection Agency proposed effluent limitation guidelines restricting per- and polyfluoroalkyl substances from metal finishing and semiconductor manufacturing plants nationwide.",
+        "url": "https://www.manufacturingdive.com/news/epa-proposes-pfas-wastewater-limits-semiconductor-metal/831390/",
+        "subtopic": "standards_governance"
+      }
+    ],
+    "expected_entities": ["EPA"],
+    "expected_metrics": []
+  },
+  {
+    "id": "case_09",
+    "theme_label": "Industrial Acquisitions",
+    "centroid_title": "Rockwell Automation completes $1.2B acquisition of motion control software provider",
+    "expected_event_type": "M_AND_A_PARTNERSHIP",
+    "member_articles": [
+      {
+        "id": "art_rockwell_acq",
+        "source_id": "manufacturing_dive",
+        "title": "Rockwell Automation completes $1.2B acquisition of motion control software provider",
+        "clean_text": "Rockwell Automation announced the closing of its $1.2 billion acquisition of Clearpath Robotics to accelerate autonomous vehicle fleets in smart factory manufacturing cells.",
+        "url": "https://www.manufacturingdive.com/news/rockwell-automation-closes-12b-clearpath-acquisition/831405/",
+        "subtopic": "production_technology"
+      }
+    ],
+    "expected_entities": ["Rockwell Automation"],
+    "expected_metrics": ["$1.2B", "$1.2 billion"]
+  },
+  {
+    "id": "case_10",
+    "theme_label": "Workforce Training",
+    "centroid_title": "Department of Labor awards $65M for advanced manufacturing apprenticeship consortiums",
+    "expected_event_type": "WORKFORCE_LABOR",
+    "member_articles": [
+      {
+        "id": "art_dol_apprenticeship",
+        "source_id": "manufacturing_dive",
+        "title": "Department of Labor awards $65M for advanced manufacturing apprenticeship consortiums",
+        "clean_text": "The Department of Labor distributed $65 million across 16 community colleges and industrial trade councils to train 8,500 credentialed CNC machinists and industrial maintenance technicians over three years.",
+        "url": "https://www.manufacturingdive.com/news/dol-awards-65m-advanced-manufacturing-apprenticeships/831420/",
+        "subtopic": "workforce_analytics"
+      }
+    ],
+    "expected_entities": ["Department of Labor"],
+    "expected_metrics": ["$65M", "$65 million"]
+  }
+]

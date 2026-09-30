@@ -1,0 +1,38 @@
+[
+  {
+    "text": "NIST Awards More Than $30 Million for MEP Centers to accelerate advanced manufacturing technology adoption.",
+    "expected_subtopic": "standards & governance",
+    "expected_sentiment": "positive",
+    "expected_org": "NIST"
+  },
+  {
+    "text": "Amazon and US Steel announce massive new robotic facility investments across the midwest.",
+    "expected_subtopic": "production technology",
+    "expected_sentiment": "positive",
+    "expected_org": "Amazon"
+  },
+  {
+    "text": "USPS warns of Louisville and Indianapolis shipping delays due to freight facility bottlenecks.",
+    "expected_subtopic": "supply chain resilience",
+    "expected_sentiment": "negative",
+    "expected_org": "USPS"
+  },
+  {
+    "text": "New generative AI computer vision model deployed on automated inspection assembly lines.",
+    "expected_subtopic": "industrial AI",
+    "expected_sentiment": "positive",
+    "expected_org": null
+  },
+  {
+    "text": "Apprenticeship and cybersecurity workforce development grants awarded to address factory talent shortage.",
+    "expected_subtopic": "workforce analytics",
+    "expected_sentiment": "positive",
+    "expected_org": null
+  },
+  {
+    "text": "Vibration sensor monitoring predicts motor failure 48 hours before assembly line downtime.",
+    "expected_subtopic": "predictive maintenance",
+    "expected_sentiment": "neutral",
+    "expected_org": null
+  }
+]

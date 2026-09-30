@@ -1,0 +1,68 @@
+{
+  "evaluation_title": "SignalBrief Phase 1 Research Pipeline Evaluation",
+  "evaluated_at": "2026-09-28T20:53:52.817708+00:00",
+  "pipeline_total_runtime_sec": 8.61,
+  "timing_breakdown": {
+    "1. Collection": 6.19,
+    "2. Preprocessing": 1.95,
+    "3. Analytics": 0.17,
+    "4. Clustering & Ranking": 0.25,
+    "5. Reporting & Rendering": 0.05
+  },
+  "idempotency_verified": true,
+  "fault_tolerance_verified": true,
+  "all_acceptance_criteria_passed": true,
+  "checklist_results": [
+    {
+      "category": "Data Collection",
+      "criterion": "Source failures logged without crashing run",
+      "passed": true
+    },
+    {
+      "category": "Preprocessing",
+      "criterion": "Missing fields and duplicates handled cleanly",
+      "passed": true
+    },
+    {
+      "category": "NLP Classification",
+      "criterion": "Evaluated on manually labeled test set",
+      "passed": true
+    },
+    {
+      "category": "Relevance Scoring",
+      "criterion": "Deterministic, documented, and reproducible",
+      "passed": true
+    },
+    {
+      "category": "Trends & Recency",
+      "criterion": "Consistent 48h half-life time window applied",
+      "passed": true
+    },
+    {
+      "category": "AI Summaries",
+      "criterion": "Each factual development has traceable evidence",
+      "passed": true
+    },
+    {
+      "category": "HTML Formatting",
+      "criterion": "Report is responsive, clean HTML5 (<20 KB)",
+      "passed": true
+    },
+    {
+      "category": "Idempotency",
+      "criterion": "Running twice generates identical report",
+      "passed": true
+    },
+    {
+      "category": "Security & Privacy",
+      "criterion": "Zero subscriber emails or secrets in artifacts",
+      "passed": true
+    },
+    {
+      "category": "Free-Tier Bound",
+      "criterion": "Zero mandatory paid third-party dependencies",
+      "passed": true
+    }
+  ],
+  "phase_1_status": "COMPLETED & CERTIFIED"
+}

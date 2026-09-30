@@ -54,6 +54,7 @@ data/processed/*
 !data/processed/.gitkeep
 data/evaluation/*
 !data/evaluation/.gitkeep
+!data/evaluation/*.json
 # data/samples/ can contain small anonymized/synthetic test fixtures
 
 # Generated Reports (Keep folder structure, do not commit generated user reports)
