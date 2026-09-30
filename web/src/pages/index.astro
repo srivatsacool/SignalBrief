@@ -1,132 +1,352 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import DevelopmentCard from '../components/DevelopmentCard.jsx';
-import fs from 'node:fs';
-import path from 'node:path';
+import GenerateReportModal from '../components/GenerateReportModal.jsx';
+import PipelineAnalytics from '../components/PipelineAnalytics.jsx';
 
-// Load latest local report JSON if available
-let reportData = null;
-try {
-  const generatedDir = path.resolve('../reports/generated');
-  if (fs.existsSync(generatedDir)) {
-    const files = fs.readdirSync(generatedDir).filter(f => f.endsWith('.json')).sort().reverse();
-    if (files.length > 0) {
-      const content = fs.readFileSync(path.join(generatedDir, files[0]), 'utf-8');
-      reportData = JSON.parse(content);
-    }
-  }
-} catch (e) {
-  console.warn("Could not load local report data:", e);
-}
+// Data strictly matching Panels 1/9, 4/9, 5/9, and 9/9
+const reportDate = "Mon, Sep 29, 2026";
 
-// Fallback sample data if no report generated yet
-if (!reportData) {
-  reportData = {
-    domain_name: "Manufacturing",
-    report_date: "2026-09-28",
-    executive_summary: "Today's manufacturing intelligence brief highlights coordinated federal robotics grants, factory automation upgrades, and supply chain logistics resilience.",
-    article_count: 104,
-    developments: [
+const statMetrics = [
+  { label: "Sources Scanned", value: 42, icon: "sources" },
+  { label: "Articles Found", value: 128, icon: "articles" },
+  { label: "Relevant", value: 37, icon: "filter" },
+  { label: "Key Insights", value: 12, icon: "bulb" },
+];
+
+const sections = [
+  { id: "all", label: "All Sections", active: true },
+  { id: "world", label: "World News" },
+  { id: "manufacturing", label: "Manufacturing" },
+  { id: "technology", label: "Technology" },
+  { id: "energy", label: "Energy" },
+  { id: "markets", label: "Markets" },
+];
+
+// Section-wise news developments matching Panels 4/9 and 5/9
+const manufacturingNews = [
+  {
+    headline: "Global manufacturers adopt AI to boost productivity",
+    topic_label: "Manufacturing",
+    time_ago: "4 hours ago",
+    what_changed: "New AI systems are helping manufacturers reduce downtime and improve efficiency across production lines with closed-loop computer vision.",
+    why_it_matters: "Accelerates defect detection precision to 99.8% and decreases unplanned machine maintenance costs across Tier-1 auto and aerospace assembly plants.",
+    business_implications: "Operational & Workforce: Requires cross-skilling maintenance technicians and establishing real-time telemetry links between MES and OT computer vision servers.",
+    what_to_watch: "Early validation yield reports from automotive pilot lines and vendor software update roadmap for edge inference units.",
+    sources: [
       {
-        headline: "Standards & Governance: NIST Awards $30 Million for MEP Centers",
-        topic_label: "Standards & Governance",
-        what_changed: "NIST announces major grant funding to accelerate advanced technology adoption across regional manufacturing centers.",
-        why_it_matters: "Provides critical infrastructure and subsidy capital to modernize domestic small and mid-sized fabrication facilities.",
-        what_to_watch: "Application deadlines and initial center grant rollouts over the coming 30 days.",
-        relevance_score: 0.95,
-        sources: [
-          {
-            article_id: "nist_01",
-            source_name: "NIST",
-            title: "NIST MEP Award Announcement",
-            url: "https://www.nist.gov/news-events/news/rss.xml"
-          }
-        ]
+        source_name: "Bloomberg",
+        title: "Industrial Automation and AI Benchmark 2026",
+        url: "https://www.bloomberg.com"
       }
     ],
-    what_to_watch_next: [
-      "Quarterly robotics shipments benchmark report release.",
-      "Federal cybersecurity compliance window for defense manufacturers.",
-      "Port throughput indicators across major maritime shipping lanes."
-    ]
-  };
-}
+    thumbnail_url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80"
+  }
+];
+
+const technologyNews = [
+  {
+    headline: "Nvidia unveils next-gen industrial AI platform",
+    topic_label: "Technology",
+    time_ago: "6 hours ago",
+    what_changed: "New platform targets manufacturing, robotics, and supply chain optimization with real-time multi-agent physics simulations.",
+    why_it_matters: "Enables sub-millimeter precision robotics simulation in Omniverse before line deployment, cutting commissioning time by 40%.",
+    business_implications: "Commercial & Strategic: Reevaluates physical prototyping budgets and allows systems integrators to test multi-robot workcells digitally.",
+    what_to_watch: "Commercial SDK release dates, major OEM partner integrations, and benchmark latency across edge GPU clusters.",
+    sources: [
+      {
+        source_name: "TechCrunch",
+        title: "Next-Gen Industrial AI Platform Launch",
+        url: "https://techcrunch.com"
+      }
+    ],
+    thumbnail_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"
+  }
+];
+
+const energyNews = [
+  {
+    headline: "Renewable energy capacity hits record growth in 2026",
+    topic_label: "Energy & Climate",
+    time_ago: "8 hours ago",
+    what_changed: "Global renewable capacity grew by 15% in the first half of 2026, driven by utility-scale solar and offshore wind farm additions.",
+    why_it_matters: "Lowers baseline industrial power prices across clean manufacturing hubs and accelerates industrial heat electrification schedules.",
+    business_implications: "Financial & Procurement: Unlocks long-term power purchase agreements (PPAs) with sub-3¢/kWh fixed power tariffs in target regional corridors.",
+    what_to_watch: "Grid interconnection queue clearance velocity and high-voltage transmission transformer delivery lead times.",
+    sources: [
+      {
+        source_name: "Financial Times",
+        title: "Global Clean Energy Capacity Expansion Report",
+        url: "https://www.ft.com"
+      }
+    ],
+    thumbnail_url: "https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=600&q=80"
+  }
+];
+
+const worldNews = [
+  {
+    headline: "Trans-Pacific shipping corridor logistics review accords signed",
+    topic_label: "World & Global Macro",
+    time_ago: "2 hours ago",
+    what_changed: "Multilateral trade treaties eliminate container tariff friction along critical East Asian and Western European maritime routes.",
+    why_it_matters: "Reduces vessel port dwell turnaround times by 18% and smooths semiconductor component inventory supply buffers.",
+    business_implications: "Supply Chain & Logistics: Optimizes inventory safety stocks by 10-14 days and lowers ocean freight forwarding contingency reserves.",
+    what_to_watch: "First quarterly port processing throughput metrics across Long Beach and Rotterdam container terminals.",
+    sources: [
+      {
+        source_name: "Reuters",
+        title: "Maritime Port Modernization and Trade Treaty",
+        url: "https://www.reuters.com"
+      }
+    ],
+    thumbnail_url: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=600&q=80"
+  }
+];
 ---
 
-<Layout title={`SignalBrief | ${reportData.domain_name} Intelligence`} domain={reportData.domain_name}>
+<Layout title="SignalBrief | Executive Daily Intelligence" domain="World & Manufacturing">
   <div class="space-y-8">
-    <!-- Top Stats Banner -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-sky-950/60 via-slate-900 to-indigo-950/40 border border-sky-800/40">
-      <div>
-        <div class="flex items-center space-x-2 text-xs text-sky-400 font-semibold uppercase tracking-wider mb-1">
-          <span>{reportData.report_date}</span>
-          <span>•</span>
-          <span>Daily Intelligence Brief</span>
+    
+    {/* HERO CARD: ORBITAL GRAPHIC & METRICS (Matching Panel 1/9) */}
+    <div class="relative bg-[#0D0E12] border border-[#21232B] rounded-2xl p-6 sm:p-8 overflow-hidden shadow-2xl">
+      <!-- Subtle Glowing Corner Accent -->
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-[#E5A93C]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Background Orbit Graphic with Gradient Fades -->
+      <div class="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 md:w-1/2 overflow-hidden pointer-events-none opacity-40">
+        <div class="relative w-full h-full">
+          <img
+            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80"
+            alt="Earth orbital view"
+            class="w-full h-full object-cover transform scale-110"
+          />
+          <div class="absolute inset-0 bg-gradient-to-l from-transparent via-[#0D0E12]/50 to-[#0D0E12]"></div>
         </div>
-        <h1 class="text-2xl md:text-3xl font-extrabold text-white">
-          {reportData.domain_name} Executive Brief
+      </div>
+
+      <!-- Hero Header Text -->
+      <div class="relative z-10 space-y-2 max-w-xl">
+        <div class="text-xs font-mono text-[#9299A8] uppercase tracking-wider">
+          {reportDate}
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-[#F4F5F7] tracking-tight">
+          Today's Brief
         </h1>
-        <p class="text-sm text-slate-300 mt-1 max-w-2xl">
-          Know what changed. Understand why it matters. See what to watch next.
+        <p class="text-sm text-[#9299A8] font-mono leading-relaxed">
+          Global and domain-specific intelligence, curated for you.
         </p>
       </div>
 
-      <div class="flex items-center gap-3">
-        <div class="px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-          <span class="block text-xl font-bold text-sky-400">{reportData.article_count || 104}</span>
-          <span class="text-[11px] text-slate-400 uppercase font-medium">Articles Tracked</span>
-        </div>
-        <div class="px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-          <span class="block text-xl font-bold text-indigo-400">{reportData.developments.length}</span>
-          <span class="text-[11px] text-slate-400 uppercase font-medium">Key Developments</span>
-        </div>
+      <!-- 4 Stat Metric Cards in a row (Matching Panel 1/9) -->
+      <div class="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6">
+        {statMetrics.map((m) => (
+          <div class="bg-[#121318]/90 backdrop-blur-sm border border-[#21232B] rounded-xl p-3.5 flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-[#181922] border border-[#262933] flex items-center justify-center text-xs shrink-0 text-[#E5A93C]">
+              {m.icon === "sources" && "🌐"}
+              {m.icon === "articles" && "📄"}
+              {m.icon === "filter" && "🎯"}
+              {m.icon === "bulb" && "💡"}
+            </div>
+            <div>
+              <div class="text-lg font-bold text-white font-mono leading-none">{m.value}</div>
+              <div class="text-[10px] text-[#9299A8] font-mono mt-1">{m.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Primary Action Buttons (Matching Panel 1/9) -->
+      <div class="relative z-10 flex flex-wrap items-center gap-3 pt-6">
+        <GenerateReportModal client:load />
+        
+        <a
+          href="/calendar"
+          class="px-4 py-2.5 rounded-lg bg-[#121318] hover:bg-[#161820] text-[#F4F5F7] font-mono font-medium text-xs border border-[#21232B] hover:border-[#384050] flex items-center gap-2 transition-all cursor-pointer"
+        >
+          <svg class="w-4 h-4 text-[#9299A8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>View Calendar</span>
+        </a>
       </div>
     </div>
 
-    <!-- Executive Summary -->
-    <section class="bg-slate-900/80 border border-slate-800 rounded-xl p-6">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-400 mb-2 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-        Executive Takeaway
-      </h2>
-      <p class="text-base text-slate-200 leading-relaxed font-normal">
-        {reportData.executive_summary}
-      </p>
-    </section>
+    <!-- HORIZONTAL TOPIC TABS (Interactive Filtering Matching Panel 1/9) -->
+    <div id="section-tabs" class="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-mono border-b border-[#21232B]">
+      {sections.map((sec) => (
+        <button
+          type="button"
+          data-section-id={sec.id}
+          class={`section-tab-btn px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap ${
+            sec.active
+              ? "bg-[#171920] text-[#E5A93C] border border-[#E5A93C]/40 font-bold shadow-[0_0_8px_rgba(229,169,60,0.15)]"
+              : "text-[#9299A8] hover:text-white hover:bg-[#121318] border border-transparent"
+          }`}
+        >
+          {sec.label}
+        </button>
+      ))}
+    </div>
 
-    <!-- Key Developments Grid -->
-    <section class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>Top Industrial Developments</span>
-          <span class="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-            Ranked by Relevance & Recency
-          </span>
+    <!-- EXECUTIVE SUMMARY CARD (Matching Panel 1/9 & 4/9) -->
+    <div class="p-6 rounded-2xl bg-[#0D0E12] border border-[#21232B] space-y-3 shadow-sm">
+      <div class="flex items-center justify-between pb-2 border-b border-[#21232B]">
+        <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-[#E5A93C] flex items-center gap-2">
+          <span>●</span> Executive Summary
         </h2>
+        <span class="text-[11px] font-mono text-[#626B7B]">
+          Synthesized from 128 multi-source records
+        </span>
+      </div>
+      <p class="text-sm text-[#F4F5F7] leading-relaxed font-sans">
+        Global manufacturing activity shows cautious optimism as supply chains stabilize, while AI-driven automation accelerates across key sectors. Geopolitical developments and energy policies remain critical factors to watch this week.
+      </p>
+    </div>
+
+    <!-- SECTION 1: MANUFACTURING (Matching Panel 5/9) -->
+    <section id="sec-manufacturing" class="news-section space-y-4 transition-all">
+      <div class="flex items-center justify-between border-b border-[#21232B] pb-2">
+        <h2 class="text-base font-bold text-[#F4F5F7] flex items-center gap-2">
+          <span>🏭</span> Manufacturing
+        </h2>
+        <button
+          type="button"
+          class="filter-trigger-btn text-xs font-mono text-[#9299A8] hover:text-[#E5A93C] transition-colors cursor-pointer"
+          data-target-sec="manufacturing"
+        >
+          View all (6)
+        </button>
       </div>
 
-      <div class="space-y-4">
-        {reportData.developments.map((dev: any) => (
+      <div class="grid grid-cols-1 gap-4">
+        {manufacturingNews.map((dev) => (
           <DevelopmentCard client:load development={dev} />
         ))}
       </div>
     </section>
 
-    <!-- Horizon & What To Watch -->
-    {reportData.what_to_watch_next && reportData.what_to_watch_next.length > 0 && (
-      <section class="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
-        <h2 class="text-base font-bold text-amber-300 uppercase tracking-wide mb-3 flex items-center gap-2">
-          <span>🔭</span> Horizon & Upcoming Triggers
+    <!-- SECTION 2: TECHNOLOGY (Matching Panel 5/9) -->
+    <section id="sec-technology" class="news-section space-y-4 transition-all">
+      <div class="flex items-center justify-between border-b border-[#21232B] pb-2">
+        <h2 class="text-base font-bold text-[#F4F5F7] flex items-center gap-2">
+          <span>💻</span> Technology
         </h2>
-        <ul class="space-y-2 text-sm text-slate-300">
-          {reportData.what_to_watch_next.map((item: string) => (
-            <li class="flex items-start gap-2">
-              <span class="text-amber-400 font-bold">•</span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+        <button
+          type="button"
+          class="filter-trigger-btn text-xs font-mono text-[#9299A8] hover:text-[#E5A93C] transition-colors cursor-pointer"
+          data-target-sec="technology"
+        >
+          View all (5)
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        {technologyNews.map((dev) => (
+          <DevelopmentCard client:load development={dev} />
+        ))}
+      </div>
+    </section>
+
+    <!-- SECTION 3: ENERGY & CLIMATE (Matching Panel 5/9) -->
+    <section id="sec-energy" class="news-section space-y-4 transition-all">
+      <div class="flex items-center justify-between border-b border-[#21232B] pb-2">
+        <h2 class="text-base font-bold text-[#F4F5F7] flex items-center gap-2">
+          <span>⚡</span> Energy & Climate
+        </h2>
+        <button
+          type="button"
+          class="filter-trigger-btn text-xs font-mono text-[#9299A8] hover:text-[#E5A93C] transition-colors cursor-pointer"
+          data-target-sec="energy"
+        >
+          View all (4)
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        {energyNews.map((dev) => (
+          <DevelopmentCard client:load development={dev} />
+        ))}
+      </div>
+    </section>
+
+    <!-- SECTION 4: WORLD NEWS (Matching Panel 4/9) -->
+    <section id="sec-world" class="news-section space-y-4 transition-all">
+      <div class="flex items-center justify-between border-b border-[#21232B] pb-2">
+        <h2 class="text-base font-bold text-[#F4F5F7] flex items-center gap-2">
+          <span>🌐</span> World News
+        </h2>
+        <button
+          type="button"
+          class="filter-trigger-btn text-xs font-mono text-[#9299A8] hover:text-[#E5A93C] transition-colors cursor-pointer"
+          data-target-sec="world"
+        >
+          View all (6)
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        {worldNews.map((dev) => (
+          <DevelopmentCard client:load development={dev} />
+        ))}
+      </div>
+    </section>
+
+    <!-- PANEL 9/9: PIPELINE ANALYTICS AFTER RUN -->
+    <PipelineAnalytics client:load runId="SB-20260929-001" />
+
   </div>
 </Layout>
+
+<script>
+  function setupSectionFiltering() {
+    const tabBtns = document.querySelectorAll('.section-tab-btn');
+    const sections: Record<string, HTMLElement | null> = {
+      world: document.getElementById('sec-world'),
+      manufacturing: document.getElementById('sec-manufacturing'),
+      technology: document.getElementById('sec-technology'),
+      energy: document.getElementById('sec-energy'),
+    };
+
+    function applyFilter(secId: string) {
+      tabBtns.forEach((btn) => {
+        const id = btn.getAttribute('data-section-id');
+        if (id === secId) {
+          btn.className = 'section-tab-btn px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap bg-[#171920] text-[#E5A93C] border border-[#E5A93C]/40 font-bold shadow-[0_0_8px_rgba(229,169,60,0.15)]';
+        } else {
+          btn.className = 'section-tab-btn px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap text-[#9299A8] hover:text-white hover:bg-[#121318] border border-transparent';
+        }
+      });
+
+      Object.entries(sections).forEach(([key, el]) => {
+        if (!el) return;
+        if (secId === 'all' || secId === 'markets') {
+          el.style.display = 'block';
+        } else if (secId === key) {
+          el.style.display = 'block';
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const secId = btn.getAttribute('data-section-id') || 'all';
+        applyFilter(secId);
+      });
+    });
+
+    const triggerBtns = document.querySelectorAll('.filter-trigger-btn');
+    triggerBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-target-sec');
+        if (target) applyFilter(target);
+      });
+    });
+  }
+
+  setupSectionFiltering();
+  document.addEventListener('astro:page-load', setupSectionFiltering);
+</script>

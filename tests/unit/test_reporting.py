@@ -152,3 +152,80 @@ def test_render_templates():
     assert "MANUFACTURING INTELLIGENCE" in email_txt
     assert "SIGNALBRIEF" in email_txt
 
+
+def test_triadic_synthesis_centroid_url_fallback():
+    """Verify centroid URL fallback when member articles have no valid URLs."""
+    cluster = {
+        "cluster_id": 2,
+        "theme_label": "Supply Chain Logistics",
+        "centroid_title": "Port congestion eases across West Coast terminals",
+        "centroid_article_id": "art_centroid_1",
+        "centroid_url": "https://www.transportation.gov/news/ports-update",
+        "sources": ["dot_feed"],
+        "composite_score": 0.91,
+        "member_articles": [
+            {"id": "a1", "source_id": "dot_feed", "title": "Update", "url": ""},
+            {"id": "a2", "source_id": "dot_feed", "title": "Notice", "url": None},
+        ],
+    }
+    dev = synthesize_triad_from_cluster(cluster)
+    assert len(dev.sources) == 1
+    assert dev.sources[0].url == "https://www.transportation.gov/news/ports-update"
+    assert dev.sources[0].source_name == "Dot Feed"
+
+
+def test_triadic_synthesis_canonical_url_and_iteration():
+    """Verify canonical URL fallback and scanning member articles beyond the first 4."""
+    cluster = {
+        "cluster_id": 3,
+        "theme_label": "Advanced Materials",
+        "centroid_title": "Ceramic composite breakthroughs in aerospace manufacturing",
+        "sources": ["feed_a", "feed_b"],
+        "composite_score": 0.85,
+        "member_articles": [
+            {"id": "a1", "source_id": "feed_a", "title": "Dup 1", "url": "https://example.com/item1"},
+            {"id": "a2", "source_id": "feed_a", "title": "Dup 2", "url": "https://example.com/item1"},  # duplicate
+            {"id": "a3", "source_id": "feed_a", "title": "No URL", "url": ""},
+            {"id": "a4", "source_id": "feed_a", "title": "No URL", "url": None},
+            {"id": "a5", "source_id": "feed_b", "title": "Canonical Only", "url": "", "url_canonical": "https://example.com/canonical-item"},
+            {"id": "a6", "source_id": "feed_b", "title": "Valid Item", "url": "https://example.com/item2"},
+        ],
+    }
+    dev = synthesize_triad_from_cluster(cluster)
+    assert len(dev.sources) == 3
+    urls = [s.url for s in dev.sources]
+    assert "https://example.com/item1" in urls
+    assert "https://example.com/canonical-item" in urls
+    assert "https://example.com/item2" in urls
+
+
+def test_build_daily_report_payload_filters_uncited_developments():
+    """Verify build_daily_report_payload retains only cited developments if uncited exist."""
+    cited_cluster = {
+        "cluster_id": 1,
+        "theme_label": "Robotics",
+        "centroid_title": "Robotics deployment",
+        "sources": ["src1"],
+        "composite_score": 0.8,
+        "member_articles": [{"id": "a1", "source_id": "src1", "title": "Title 1", "url": "https://example.com/1"}],
+    }
+    uncited_cluster = {
+        "cluster_id": 2,
+        "theme_label": "Rumor",
+        "centroid_title": "Unsubstantiated rumor",
+        "sources": [],
+        "composite_score": 0.5,
+        "member_articles": [{"id": "a2", "source_id": "src2", "title": "No link", "url": ""}],
+    }
+    report = build_daily_report_payload(
+        domain_id="manufacturing",
+        domain_name="Manufacturing",
+        report_date="2026-09-28",
+        ranked_developments=[cited_cluster, uncited_cluster],
+        total_articles_monitored=30,
+    )
+    assert len(report.developments) == 1
+    assert report.developments[0].headline.startswith("Robotics")
+    assert all(len(d.sources) > 0 for d in report.developments)
+
+

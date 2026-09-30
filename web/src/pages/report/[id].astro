@@ -36,7 +36,7 @@ try {
 if (!reportData) {
   reportData = {
     id,
-    domain_name: "Manufacturing",
+    domain_name: "World & Manufacturing",
     report_date: "2026-09-28",
     executive_summary: "Automated analysis of industrial AI deployment, robotics expansion, and federal standards across verified public sources.",
     developments: [],
@@ -45,63 +45,73 @@ if (!reportData) {
 }
 ---
 
-<Layout title={`SignalBrief | ${reportData.domain_name} Briefing (${reportData.report_date})`} domain={reportData.domain_name}>
+<Layout title={`SignalBrief | ${reportData.domain_name} (${reportData.report_date})`} domain={reportData.domain_name}>
   <div class="space-y-8">
-    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#252832] pb-4">
       <div>
-        <a href="/" class="text-xs text-sky-400 hover:text-sky-300 font-medium transition-colors">
+        <a href="/" class="text-xs text-[#18D69A] hover:underline font-mono transition-colors">
           ← Back to Today's Dashboard
         </a>
-        <h1 class="text-2xl font-extrabold text-white mt-2">
-          {reportData.domain_name} Daily Intelligence Brief
+        <h1 class="text-2xl font-extrabold text-[#F4F5F7] mt-1.5 tracking-tight sm:text-3xl">
+          {reportData.domain_name} Intelligence Briefing
         </h1>
-        <p class="text-xs text-slate-400 mt-0.5">
+        <p class="text-xs text-[#9299A8] font-mono mt-0.5">
           Generated on {reportData.report_date} · ID: {id}
         </p>
       </div>
       <div class="flex items-center gap-2">
         <a
-          href={`/reports/generated/${id}.html`}
+          href={`/api/reports/${id}/html`}
           target="_blank"
-          class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors border border-slate-700"
+          class="px-3.5 py-1.5 rounded-lg bg-[#121318] hover:bg-[#171920] text-[#18D69A] text-xs font-mono font-semibold transition-colors border border-[#252832]"
         >
-          View Raw HTML ↗
+          View Raw Source HTML ↗
         </a>
       </div>
     </div>
 
     <!-- Executive Summary -->
-    <section class="bg-slate-900/80 border border-slate-800 rounded-xl p-6">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-sky-400 mb-2">Executive Summary</h2>
-      <p class="text-sm text-slate-200 leading-relaxed">
+    <section class="bg-[#0D0E12] border border-[#252832] rounded-xl p-6 space-y-2 shadow-sm">
+      <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-[#18D69A] flex items-center gap-2">
+        <span>■</span> Executive Summary
+      </h2>
+      <p class="text-sm text-[#F4F5F7] leading-relaxed font-sans">
         {reportData.executive_summary}
       </p>
     </section>
 
-    <!-- Developments -->
+    <!-- Developments with Immediate Inline Citations -->
     <section class="space-y-4">
-      <h2 class="text-lg font-bold text-white">Reported Developments</h2>
+      <div class="flex items-center justify-between border-b border-[#252832] pb-2">
+        <h2 class="text-base font-bold text-[#F4F5F7] tracking-tight">
+          Synthesized Developments
+        </h2>
+        <span class="text-xs font-mono text-[#9299A8]">
+          100% Verified Citations
+        </span>
+      </div>
+
       <div class="space-y-4">
         {reportData.developments && reportData.developments.length > 0 ? (
           reportData.developments.map((dev: any) => (
             <DevelopmentCard client:load development={dev} />
           ))
         ) : (
-          <p class="text-sm text-slate-500 py-4">No development details recorded for this report.</p>
+          <p class="text-xs font-mono text-[#626B7B] py-4 text-center">No development details recorded for this report.</p>
         )}
       </div>
     </section>
 
-    <!-- Horizon -->
+    <!-- Horizon Scan -->
     {reportData.what_to_watch_next && reportData.what_to_watch_next.length > 0 && (
-      <section class="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
-        <h2 class="text-base font-bold text-amber-300 uppercase tracking-wide mb-3">
-          What To Watch Next
-        </h2>
-        <ul class="space-y-2 text-sm text-slate-300">
+      <section class="bg-[#0D0E12] border border-[#252832] rounded-xl p-6 space-y-3 shadow-sm">
+        <h3 class="text-xs font-mono font-bold text-[#E5A93C] uppercase tracking-wide">
+          What To Watch Next (Next 30 Days)
+        </h3>
+        <ul class="space-y-2 text-xs font-sans text-[#9299A8]">
           {reportData.what_to_watch_next.map((item: string) => (
             <li class="flex items-start gap-2">
-              <span class="text-amber-400 font-bold">•</span>
+              <span class="text-[#E5A93C] font-bold">•</span>
               <span>{item}</span>
             </li>
           ))}

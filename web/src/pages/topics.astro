@@ -3,40 +3,40 @@ import Layout from '../layouts/Layout.astro';
 
 const topics = [
   {
-    name: "Industrial AI",
+    name: "Industrial AI & Vision",
     description: "Machine learning, computer vision defect inspection, generative process optimization, and factory floor digital twins.",
     keywords: ["computer vision", "defect detection", "generative ai", "machine learning"],
-    color: "sky"
+    color: "#32B8F4"
   },
   {
-    name: "Production Technology",
+    name: "Production Technology & Robotics",
     description: "Robotics automation, automated guided vehicles (AGVs), CNC machining, additive manufacturing, and gigafactory lines.",
     keywords: ["robotics", "automation", "3d printing", "smart factory"],
-    color: "indigo"
+    color: "#18D69A"
   },
   {
     name: "Supply Chain Resilience",
     description: "Maritime shipping, freight rates, port congestion, warehouse logistics, nearshoring, and component procurement.",
     keywords: ["logistics", "freight", "warehousing", "procurement"],
-    color: "emerald"
+    color: "#32B8F4"
   },
   {
     name: "Standards & Governance",
     description: "NIST cybersecurity frameworks, federal technology grant allocations, MEP centers, and industrial safety compliance.",
     keywords: ["nist", "compliance", "grants", "cybersecurity"],
-    color: "amber"
+    color: "#E5A93C"
   },
   {
     name: "Predictive Maintenance",
     description: "IoT vibration sensors, condition-based monitoring, acoustic analysis, and predictive motor failure prevention.",
     keywords: ["vibration analysis", "sensor monitoring", "downtime prevention"],
-    color: "rose"
+    color: "#32B8F4"
   },
   {
-    name: "Workforce Analytics",
+    name: "Workforce & Labor Analytics",
     description: "Technical apprenticeships, industrial STEM hiring, factory wage trends, and automation retraining programs.",
     keywords: ["apprenticeship", "talent pipeline", "workforce development"],
-    color: "purple"
+    color: "#18D69A"
   }
 ];
 
@@ -49,26 +49,35 @@ const approvedSources = [
 ];
 ---
 
-<Layout title="SignalBrief | Topics & Sources Explorer" domain="Manufacturing">
+<Layout title="SignalBrief | Topics & Sources Explorer" domain="Taxonomy">
   <div class="space-y-8">
-    <div>
-      <h1 class="text-2xl font-extrabold text-white">Topics & Taxonomy</h1>
-      <p class="text-sm text-slate-400 mt-1">
-        Core analytical subtopics and monitored thematic taxonomies for the Manufacturing domain.
+    <div class="space-y-1.5">
+      <div class="flex items-center gap-2 font-mono text-xs text-[#18D69A]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#18D69A]"></span>
+        <span>AUDITED TAXONOMY & SOURCES</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-[#F4F5F7] tracking-tight sm:text-3xl">
+        Topics & Monitored Feeds
+      </h1>
+      <p class="text-xs text-[#9299A8] font-mono leading-relaxed">
+        Empirically audited feeds and analytical subtopic clusters monitored for SignalBrief intelligence gathering.
       </p>
     </div>
 
     <!-- Subtopics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {topics.map((t) => (
-        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-6 flex flex-col justify-between hover:border-slate-700 transition-colors">
+        <div class="bg-[#121318] border border-[#252832] rounded-xl p-5 flex flex-col justify-between hover:border-[#384050] transition-colors">
           <div>
-            <h3 class="text-lg font-bold text-white mb-2">{t.name}</h3>
-            <p class="text-xs text-slate-300 leading-relaxed mb-4">{t.description}</p>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-2 h-2 rounded-full" style={`background-color: ${t.color}`}></span>
+              <h3 class="text-sm font-bold text-white">{t.name}</h3>
+            </div>
+            <p class="text-xs text-[#9299A8] leading-relaxed mb-4">{t.description}</p>
           </div>
-          <div class="flex flex-wrap gap-1.5 pt-4 border-t border-slate-800/80">
+          <div class="flex flex-wrap gap-1.5 pt-3 border-t border-[#252832]">
             {t.keywords.map((kw) => (
-              <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#090A0F] text-[#9299A8] border border-[#252832]">
                 {kw}
               </span>
             ))}
@@ -78,32 +87,35 @@ const approvedSources = [
     </div>
 
     <!-- Verified Sources Section -->
-    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4">
-      <div class="flex items-center justify-between">
+    <div class="bg-[#0D0E12] border border-[#252832] rounded-xl p-6 space-y-4 shadow-sm">
+      <div class="flex items-center justify-between pb-3 border-b border-[#252832]">
         <div>
-          <h2 class="text-base font-bold text-white">Verified Public Sources</h2>
-          <p class="text-xs text-slate-400 mt-0.5">
-            Empirically audited feeds monitored for SignalBrief intelligence gathering.
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#18D69A]"></span>
+            Audited Public Feed Registry
+          </h2>
+          <p class="text-xs text-[#9299A8] font-mono mt-0.5">
+            100% cited primary endpoints. Zero algorithmic fabrication.
           </p>
         </div>
-        <span class="text-xs px-2.5 py-1 rounded bg-sky-950 text-sky-400 border border-sky-800/60 font-semibold">
-          5 Verified Sources
+        <span class="text-[10px] font-mono px-2.5 py-1 rounded bg-[#18D69A]/10 text-[#18D69A] border border-[#18D69A]/30 font-semibold">
+          5 Verified Feeds
         </span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {approvedSources.map((s) => (
           <a
             href={s.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="p-4 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-sky-700/60 transition-colors flex items-center justify-between"
+            class="p-3.5 rounded-lg bg-[#121318] border border-[#252832] hover:border-[#32B8F4]/50 transition-colors flex items-center justify-between group"
           >
             <div>
-              <span class="font-semibold text-sm text-slate-200 block">{s.name}</span>
-              <span class="text-xs text-slate-500">{s.type}</span>
+              <span class="font-semibold text-xs text-[#F4F5F7] block group-hover:text-white">{s.name}</span>
+              <span class="text-[10px] font-mono text-[#626B7B]">{s.type}</span>
             </div>
-            <span class="text-sky-400 text-xs">↗</span>
+            <span class="text-[#32B8F4] text-xs">↗</span>
           </a>
         ))}
       </div>

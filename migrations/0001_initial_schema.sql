@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS reports (
     user_id TEXT, -- NULL for shared domain-level report
     domain_id TEXT NOT NULL,
     report_date DATE NOT NULL,
+    headline TEXT,
     status TEXT CHECK(status IN ('pending', 'collecting', 'analysing', 'generating', 'archived', 'delivered', 'failed')) DEFAULT 'pending',
     r2_key TEXT NOT NULL,
     article_count INTEGER DEFAULT 0,
@@ -132,22 +133,66 @@ CREATE TABLE IF NOT EXISTS report_articles (
     FOREIGN KEY(article_id) REFERENCES articles(id)
 );
 
--- 10. Email Logs
-CREATE TABLE IF NOT EXISTS email_logs (
+-- 10. Report Developments
+CREATE TABLE IF NOT EXISTS report_developments (
     id TEXT PRIMARY KEY,
     report_id TEXT NOT NULL,
-    user_id TEXT NOT NULL,
-    recipient_email TEXT NOT NULL,
-    status TEXT CHECK(status IN ('pending', 'sent', 'failed', 'retrying')) DEFAULT 'pending',
-    attempt_count INTEGER DEFAULT 0,
-    error_message TEXT,
-    sent_at DATETIME,
+    headline TEXT NOT NULL,
+    what_changed TEXT NOT NULL,
+    why_it_matters TEXT NOT NULL,
+    what_to_watch TEXT NOT NULL,
+    topic_label TEXT,
+    relevance_score REAL DEFAULT 0.0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(report_id) REFERENCES reports(id),
-    FOREIGN KEY(user_id) REFERENCES users(id)
+    FOREIGN KEY(report_id) REFERENCES reports(id) ON DELETE CASCADE
 );
+CREATE INDEX IF NOT EXISTS idx_devs_report ON report_developments(report_id);
 
--- 11. Pipeline Runs
+-- 11. Report Sources
+CREATE TABLE IF NOT EXISTS report_sources (
+    id TEXT PRIMARY KEY,
+    development_id TEXT NOT NULL,
+    article_id TEXT,
+    source_name TEXT,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(development_id) REFERENCES report_developments(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_sources_dev ON report_sources(development_id);
+
+-- 12. Delivery Logs
+CREATE TABLE IF NOT EXISTS delivery_logs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    report_id TEXT NOT NULL,
+    recipient_email TEXT NOT NULL,
+    delivery_status TEXT CHECK(delivery_status IN ('pending', 'sent', 'delivered', 'failed', 'retrying')) DEFAULT 'pending',
+    provider_message_id TEXT,
+    error_message TEXT,
+    delivered_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(report_id) REFERENCES reports(id)
+);
+CREATE INDEX IF NOT EXISTS idx_delivery_logs_report ON delivery_logs(report_id);
+CREATE INDEX IF NOT EXISTS idx_delivery_logs_user ON delivery_logs(user_id);
+
+-- Backward compatibility view for legacy email_logs references
+CREATE VIEW IF NOT EXISTS email_logs AS
+SELECT 
+    id,
+    report_id,
+    user_id,
+    recipient_email,
+    delivery_status AS status,
+    0 AS attempt_count,
+    error_message,
+    delivered_at AS sent_at,
+    created_at
+FROM delivery_logs;
+
+-- 13. Pipeline Runs
 CREATE TABLE IF NOT EXISTS pipeline_runs (
     id TEXT PRIMARY KEY,
     domain_id TEXT NOT NULL,

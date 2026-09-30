@@ -12,7 +12,8 @@ KEY DEVELOPMENTS:
 {{ loop.index }}. {{ item.headline }}
 * What changed: {{ item.what_changed }}
 * Why it matters: {{ item.why_it_matters }}
-* What to watch: {{ item.what_to_watch }}
+{% if item.business_implications %}* Business implications: {{ item.business_implications }}
+{% endif %}* What to watch: {{ item.what_to_watch }}
 Sources:
 {% for cite in item.sources %}
 - [{{ cite.source_name }}] {{ cite.title }}: {{ cite.url }}

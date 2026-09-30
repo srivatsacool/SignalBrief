@@ -3,30 +3,55 @@ import Layout from '../layouts/Layout.astro';
 import SettingsForm from '../components/SettingsForm.jsx';
 ---
 
-<Layout title="SignalBrief | Settings & Preferences" domain="Manufacturing">
-  <div class="max-w-2xl mx-auto space-y-6">
-    <div>
-      <h1 class="text-2xl font-extrabold text-white">Settings & Preferences</h1>
-      <p class="text-sm text-slate-400 mt-1">
-        Manage your delivery schedule, keyword weights, and notification channels.
-      </p>
-    </div>
-
-    <SettingsForm client:load />
-
-    <!-- Quota & Subscription Status -->
-    <div class="p-5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 space-y-2">
-      <h3 class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Free-Tier Subscriber Quota</h3>
-      <p>
-        SignalBrief is currently operating under the 10-subscriber initial pilot allowance. 
-        Your account is registered as one of the 10 invited readers. 
-        All analytics, summaries, and daily emails are delivered at zero cost.
-      </p>
-      <div class="flex items-center gap-2 pt-2 text-slate-500">
-        <span>Delivery: Daily at 06:00 UTC</span>
-        <span>•</span>
-        <span>Format: Responsive HTML & Mobile Plaintext</span>
+<Layout title="SignalBrief | Settings" domain="Settings">
+  <div class="space-y-6">
+    
+    {/* Page Header matching Panel 8/9 */}
+    <div class="flex items-start justify-between pb-2 border-b border-[#21232B]">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#E5A93C]/10 border border-[#E5A93C]/20 flex items-center justify-center text-[#E5A93C]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <circle cx="12" cy="12" r="3" stroke-width="2" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Settings</h1>
+            <p class="text-xs text-[#9299A8] mt-0.5">
+              Manage your preferences and interests.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#121318] border border-[#21232B] font-mono text-xs text-[#9299A8]">
+        <span class="w-2 h-2 rounded-full bg-[#18D69A]"></span>
+        <span>Account Active</span>
       </div>
     </div>
+
+    {/* Settings Form matching Panel 8/9 */}
+    <SettingsForm client:load />
+
+    {/* Quota & Subscription Status */}
+    <div class="p-5 rounded-xl bg-[#121318] border border-[#21232B] text-xs font-mono text-[#9299A8] space-y-2.5">
+      <h3 class="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#18D69A]"></span>
+        7-Spot Exclusive Pilot Readership
+      </h3>
+      <p class="text-[11px] text-[#9299A8] leading-relaxed font-sans">
+        SignalBrief is currently operating under a strict 7-subscriber capacity model. 
+        Your account is registered as one of the 7 designated readers. 
+        All analytics, summaries, and daily emails are delivered at zero cost.
+      </p>
+      <div class="flex flex-wrap items-center gap-2 pt-2 text-[10px] text-[#626B7B] border-t border-[#21232B]">
+        <span>Synthesis: Daily at 02:00 UTC</span>
+        <span>•</span>
+        <span>Dispatch: Daily at 06:00 UTC</span>
+        <span>•</span>
+        <span>Format: Responsive HTML5 & Plaintext</span>
+      </div>
+    </div>
+
   </div>
 </Layout>

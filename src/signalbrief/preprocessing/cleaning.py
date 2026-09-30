@@ -1,10 +1,20 @@
-"""Text extraction, HTML cleaning, and whitespace normalization."""
+"""Text extraction, HTML cleaning, whitespace normalization, and journalistic stopword filtering."""
 
 import html
 import re
 import unicodedata
+from typing import List, Set
 
 from bs4 import BeautifulSoup
+
+JOURNALISTIC_STOPWORDS: Set[str] = {
+    "said", "says", "announced", "announces", "reported", "reporting", "according", "also",
+    "new", "year", "years", "month", "months", "week", "weeks", "day", "days", "today", "yesterday",
+    "wednesday", "thursday", "friday", "monday", "tuesday", "saturday", "sunday",
+    "inc", "corp", "co", "llc", "ltd", "september", "august", "july", "october",
+    "update", "updates", "statement", "release", "press", "news", "facility", "facilities",
+    "download", "brief", "digest", "daily", "high", "reporters", "spokesperson",
+}
 
 
 def normalize_whitespace(text: str) -> str:
@@ -47,3 +57,8 @@ def clean_article_text(raw_text: str) -> str:
 def count_words(text: str) -> int:
     """Return the total word count of a clean text string."""
     return len(re.findall(r"\b\w+\b", text))
+
+
+def filter_journalistic_stopwords(tokens: List[str]) -> List[str]:
+    """Filter out journalistic noise tokens from keywords and topic labels."""
+    return [t for t in tokens if t.lower() not in JOURNALISTIC_STOPWORDS and len(t) > 2]

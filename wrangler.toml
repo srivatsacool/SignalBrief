@@ -1,5 +1,5 @@
 name = "signalbrief-worker"
-main = "workers/scheduler/index.js"
+main = "workers/index.js"
 compatibility_date = "2026-09-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -33,7 +33,19 @@ dead_letter_queue = "signalbrief-dlq"
 
 # Environment Variables
 [vars]
+ENVIRONMENT = "development"
+DEFAULT_DOMAIN = "manufacturing"
+REPORT_RECIPIENT_LIMIT = 7
+LOG_LEVEL = "INFO"
+SIGNALBRIEF_INTERNAL_KEY = "dev-internal-secret-key-12345"
+ALLOWED_ORIGINS = "http://localhost:4321,http://localhost:3000,https://signalbrief.pages.dev"
+DASHBOARD_URL = "http://localhost:4321"
+
+[env.production.vars]
 ENVIRONMENT = "production"
 DEFAULT_DOMAIN = "manufacturing"
-REPORT_RECIPIENT_LIMIT = 10
+REPORT_RECIPIENT_LIMIT = 7
 LOG_LEVEL = "INFO"
+ALLOWED_ORIGINS = "https://signalbrief.pages.dev"
+DASHBOARD_URL = "https://signalbrief.pages.dev"
+

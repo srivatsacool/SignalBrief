@@ -242,6 +242,7 @@ df_checklist = pd.DataFrame([
 ])
 print("Section 10 Quality Assurance & Acceptance Checklist:")
 print(df_checklist.to_string(index=False))
+assert all(status for _, _, status in checklist), "One or more acceptance criteria failed!"
 """),
 
         create_cell("markdown", """*Interpretation:* All 10 acceptance criteria pass 100%.
@@ -264,7 +265,7 @@ eval_payload = {
         {"category": c, "criterion": cr, "passed": s}
         for c, cr, s in checklist
     ],
-    "phase_1_status": "COMPLETED & CERTIFIED",
+    "phase_1_status": "COMPLETED & CERTIFIED" if all(status for _, _, status in checklist) else "INCOMPLETE",
 }
 
 with open(eval_report_file, "w", encoding="utf-8") as f:

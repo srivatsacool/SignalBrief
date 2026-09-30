@@ -1,0 +1,73 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CountdownTimer from '../components/CountdownTimer.jsx';
+import SpotAvailabilityMeter from '../components/SpotAvailabilityMeter.jsx';
+import SubscribeForm from '../components/SubscribeForm.jsx';
+---
+
+<Layout title="SignalBrief | Subscription" domain="Subscription">
+  <div class="space-y-6">
+    
+    {/* Page Header matching Panel 6/9 */}
+    <div class="flex items-start justify-between pb-2 border-b border-[#21232B]">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#E5A93C]/10 border border-[#E5A93C]/20 flex items-center justify-center text-[#E5A93C]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Subscription</h1>
+            <p class="text-xs text-[#9299A8] mt-0.5">
+              Get the daily SignalBrief delivered to your inbox.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#121318] border border-[#21232B] font-mono text-xs text-[#9299A8]">
+        <span class="w-2 h-2 rounded-full bg-[#18D69A] animate-pulse"></span>
+        <span>Pilot Capacity: 6/7 Occupied</span>
+      </div>
+    </div>
+
+    {/* Two-Column Grid matching Panel 6/9 */}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Left Column: Form & Next Run */}
+      <div class="lg:col-span-7 space-y-6">
+        <SubscribeForm client:load />
+        <CountdownTimer client:load />
+      </div>
+
+      {/* Right Column: Subscription Status Card */}
+      <div class="lg:col-span-5">
+        <SpotAvailabilityMeter client:load occupiedCount={6} totalCapacity={7} />
+      </div>
+    </div>
+
+    {/* Pilot Guarantees */}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs pt-4 border-t border-[#21232B]">
+      <div class="p-4 rounded-xl bg-[#121318] border border-[#21232B] space-y-1.5">
+        <div class="text-[#18D69A] font-bold text-xs">01. 100% Sourced Facts</div>
+        <p class="text-[#9299A8] text-[11px] leading-relaxed">
+          Zero unverified claims. Every single factual statement is linked immediately to verified public primary sources.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#121318] border border-[#21232B] space-y-1.5">
+        <div class="text-[#32B8F4] font-bold text-xs">02. Two-Tier Structure</div>
+        <p class="text-[#9299A8] text-[11px] leading-relaxed">
+          Every brief opens with Section 01 World & Global Macro News, followed by your specialized domain selections.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#121318] border border-[#21232B] space-y-1.5">
+        <div class="text-[#E5A93C] font-bold text-xs">03. Deterministic Delivery</div>
+        <p class="text-[#9299A8] text-[11px] leading-relaxed">
+          Briefings synthesize autonomously daily at 02:00 UTC and dispatch cleanly to your verified inbox.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</Layout>

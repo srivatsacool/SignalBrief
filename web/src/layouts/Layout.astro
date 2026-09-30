@@ -6,7 +6,39 @@ interface Props {
   domain?: string;
 }
 
-const { title = "SignalBrief | AI Intelligence Briefing", domain = "Manufacturing" } = Astro.props;
+const { title = "SignalBrief | Executive Daily Intelligence" } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  {
+    id: "reports",
+    label: "Reports",
+    href: "/",
+    icon: "document",
+    active: currentPath === "/" || currentPath.startsWith("/report"),
+  },
+  {
+    id: "subscribe",
+    label: "Subscribe",
+    href: "/subscribe",
+    icon: "mail",
+    active: currentPath === "/subscribe",
+  },
+  {
+    id: "calendar",
+    label: "Calendar",
+    href: "/calendar",
+    icon: "calendar",
+    active: currentPath === "/calendar",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/settings",
+    icon: "cog",
+    active: currentPath === "/settings",
+  },
+];
 ---
 
 <!DOCTYPE html>
@@ -15,47 +47,103 @@ const { title = "SignalBrief | AI Intelligence Briefing", domain = "Manufacturin
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class="bg-slate-950 text-slate-100 flex flex-col min-h-screen">
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <a href="/" class="flex items-center space-x-2">
-            <span class="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-bold text-white text-base">SB</span>
-            <span class="font-extrabold tracking-tight text-xl text-white">SignalBrief</span>
-          </a>
-          <span class="text-xs uppercase font-semibold px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800/60">
-            {domain}
+  <body class="bg-[#090A0F] text-[#F4F5F7] flex flex-col md:flex-row min-h-screen font-sans selection:bg-[#E5A93C]/20 selection:text-[#E5A93C] antialiased">
+    
+    <!-- LEFT SIDEBAR (Desktop) -->
+    <aside class="w-full md:w-60 lg:w-64 bg-[#0A0B0E] border-b md:border-b-0 md:border-r border-[#21232B] shrink-0 md:sticky md:top-0 md:h-screen flex flex-col justify-between p-5 z-40">
+      
+      <!-- Top Brand & Navigation -->
+      <div class="space-y-7">
+        
+        <!-- Logo & Wordmark -->
+        <a href="/" class="flex items-center space-x-2.5 group focus:outline-none">
+          <!-- Golden Beacon Icon -->
+          <div class="w-8 h-8 rounded-lg bg-[#14151B] border border-[#262933] flex items-center justify-center shadow-[0_0_12px_rgba(229,169,60,0.15)] group-hover:border-[#E5A93C]/60 transition-colors">
+            <svg class="w-4 h-4 text-[#E5A93C]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.2l6 3.75v7.7L12 19.4l-6-3.75v-7.7L12 4.2zm-1 4.3v7h2v-7h-2z" />
+            </svg>
+          </div>
+          <span class="font-extrabold tracking-tight text-lg text-[#F4F5F7] group-hover:text-white transition-colors">
+            SignalBrief
           </span>
-        </div>
+        </a>
 
-        <nav class="flex items-center space-x-6 text-sm font-medium text-slate-300">
-          <a href="/" class="hover:text-sky-400 transition-colors">Today's Brief</a>
-          <a href="/calendar" class="hover:text-sky-400 transition-colors">Calendar</a>
-          <a href="/topics" class="hover:text-sky-400 transition-colors">Topics</a>
-          <a href="/settings" class="hover:text-sky-400 transition-colors">Settings</a>
+        <!-- Vertical Nav Links -->
+        <nav class="space-y-1.5 font-medium text-sm">
+          {navItems.map((item) => (
+            <a
+              href={item.href}
+              class={`flex items-center space-x-3 px-3.5 py-2.5 rounded-lg transition-all ${
+                item.active
+                  ? "bg-[#E5A93C] text-[#090A0F] font-bold shadow-[0_0_15px_rgba(229,169,60,0.3)]"
+                  : "text-[#9299A8] hover:text-[#F4F5F7] hover:bg-[#121318]"
+              }`}
+            >
+              <!-- Icon rendering -->
+              {item.icon === "document" && (
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
+              {item.icon === "mail" && (
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              )}
+              {item.icon === "calendar" && (
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              )}
+              {item.icon === "cog" && (
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              )}
+              <span>{item.label}</span>
+            </a>
+          ))}
         </nav>
+      </div>
 
+      <!-- Bottom Profile Avatar -->
+      <div class="pt-4 border-t border-[#21232B] flex items-center justify-between">
         <div class="flex items-center space-x-3">
-          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800/50">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-            Live (10 Users)
-          </span>
+          <div class="w-8 h-8 rounded-lg bg-[#14151B] border border-[#262933] flex items-center justify-center font-mono font-bold text-xs text-[#E5A93C]">
+            S
+          </div>
+          <div class="text-xs">
+            <div class="font-bold text-[#F4F5F7]">Executive Pilot</div>
+            <div class="text-[10px] text-[#626B7B] font-mono">1 of 7 Readers</div>
+          </div>
         </div>
       </div>
-    </header>
+    </aside>
 
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
-      <slot />
-    </main>
+    <!-- MAIN CONTENT VIEWPORT -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8">
+        <slot />
+      </main>
 
-    <footer class="border-t border-slate-800 bg-slate-900/40 py-6 text-center text-xs text-slate-500">
-      <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p>Know what changed. Understand why it matters. See what to watch next.</p>
-        <p>© 2026 SignalBrief Open Source · MIT Licensed</p>
-      </div>
-    </footer>
+      <!-- Minimalist Editorial Footer -->
+      <footer class="border-t border-[#21232B] bg-[#0A0B0E] py-6 text-xs text-[#626B7B] mt-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px]">
+          <div class="flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#18D69A]"></span>
+            <span>Pipeline: Fully Observable · 100% Sourced & Cited</span>
+          </div>
+          <p>© 2026 SignalBrief · Strict 7-Subscriber Readership Architecture</p>
+        </div>
+      </footer>
+    </div>
+
   </body>
 </html>

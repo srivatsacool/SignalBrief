@@ -1,7 +1,7 @@
-"""Data models for generated intelligence briefs and citations."""
+"""Data models for generated intelligence briefs, citations, and analytical frameworks."""
 
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -18,14 +18,21 @@ class ReportDevelopment(BaseModel):
     headline: str
     what_changed: str
     why_it_matters: str
+    business_implications: str = ""
     what_to_watch: str
     topic_label: Optional[str] = None
+    event_type: Optional[str] = None
+    key_entities: Dict[str, List[str]] = Field(default_factory=dict)
     sources: List[Citation] = Field(default_factory=list)
     relevance_score: float = 0.0
 
     @property
     def title(self) -> str:
         return self.headline
+
+    @property
+    def what_happened(self) -> str:
+        return self.what_changed
 
 
 # Alias for backward/forward blueprint compatibility

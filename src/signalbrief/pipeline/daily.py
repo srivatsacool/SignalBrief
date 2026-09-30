@@ -27,6 +27,8 @@ from signalbrief.pipeline.stages import (
 )
 from signalbrief.reporting.validation import validate_report
 
+import os
+
 logger = logging.getLogger("signalbrief")
 
 
@@ -36,6 +38,10 @@ def run_daily_pipeline(
     output_dir: Optional[Path] = None,
     preview_dir: Optional[Path] = None,
     cached_clean_articles: Optional[List] = None,
+    sync_cloud: bool = False,
+    api_url: Optional[str] = None,
+    internal_key: Optional[str] = None,
+    dispatch_email: bool = False,
 ) -> RunState:
     """Execute the full 5-stage daily pipeline end-to-end.
 
@@ -45,6 +51,7 @@ def run_daily_pipeline(
         3. Analysis (Subtopic classification, NER, sentiment scoring)
         4. Clustering & Ranking (TF-IDF agglomeration & multi-factor scoring)
         5. Report Generation & Validation (Triadic synthesis, HTML & email rendering)
+        Optional: Cloud Synchronization (Upload HTML to R2, write metadata to D1)
     """
     target_date = run_date or date.today().isoformat()
     state = RunState(
@@ -133,6 +140,33 @@ def run_daily_pipeline(
         state.transition_to(PipelineStatus.ARCHIVED)
         logger.info(f"Report artifacts successfully written to '{out_dir}' and '{prev_dir}'.")
 
+        # Optional Cloud Synchronization
+        if sync_cloud:
+            target_api_url = api_url or os.getenv("SIGNALBRIEF_API_URL")
+            target_key = internal_key or os.getenv("SIGNALBRIEF_INTERNAL_KEY")
+            if not target_api_url or not target_key:
+                logger.warning("Cloud sync requested but SIGNALBRIEF_API_URL or SIGNALBRIEF_INTERNAL_KEY not set.")
+            else:
+                try:
+                    from signalbrief.pipeline.sync import sync_report_to_cloudflare
+                    logger.info(f"Synchronizing report with Cloudflare edge at {target_api_url}...")
+                    sync_data = sync_report_to_cloudflare(
+                        report_payload=report_payload,
+                        html_content=html_report,
+                        api_url=target_api_url,
+                        internal_key=target_key,
+                        email_html=email_html,
+                        email_text=email_text,
+                        dispatch_email=dispatch_email,
+                        articles_collected=state.articles_collected,
+                        articles_processed=state.articles_processed,
+                        duration_seconds=state.duration_seconds,
+                    )
+                    logger.info(f"Cloud sync successful: R2 Key: {sync_data.get('r2_key')}")
+                except Exception as sync_err:
+                    logger.error(f"Cloud sync failed: {sync_err}", exc_info=True)
+                    state.transition_to(PipelineStatus.FAILED, error=f"Cloud sync failed: {sync_err}")
+
     except Exception as e:
         logger.error(f"Pipeline failed: {e}", exc_info=True)
         state.transition_to(PipelineStatus.FAILED, error=str(e))
@@ -154,6 +188,10 @@ def main():
     run_parser.add_argument("--date", default=None, help="Run date YYYY-MM-DD (default: today)")
     run_parser.add_argument("--output-dir", default=None, help="Output directory for generated HTML reports")
     run_parser.add_argument("--preview-dir", default=None, help="Output directory for email previews")
+    run_parser.add_argument("--sync", action="store_true", help="Synchronize report with Cloudflare edge API")
+    run_parser.add_argument("--api-url", default=None, help="Cloudflare Worker API base URL")
+    run_parser.add_argument("--api-key", default=None, help="Internal API secret key (Bearer token)")
+    run_parser.add_argument("--dispatch-email", action="store_true", help="Trigger subscriber email dispatch")
 
     # Command: sources
     src_parser = subparsers.add_parser("sources", help="List configured sources for a domain")
@@ -172,6 +210,10 @@ def main():
         args.date = None
         args.output_dir = None
         args.preview_dir = None
+        args.sync = False
+        args.api_url = None
+        args.api_key = None
+        args.dispatch_email = False
 
     logging.basicConfig(
         level=logging.INFO,
@@ -187,6 +229,10 @@ def main():
             run_date=args.date,
             output_dir=out_dir,
             preview_dir=prev_dir,
+            sync_cloud=args.sync,
+            api_url=args.api_url,
+            internal_key=args.api_key,
+            dispatch_email=args.dispatch_email,
         )
         print("\n==========================================")
         print(f" SignalBrief Pipeline: {state.status.value.upper()}")

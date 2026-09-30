@@ -236,6 +236,11 @@
             <div class="triad-item">
               <strong>Why it matters:</strong> {{ item.why_it_matters }}
             </div>
+            {% if item.business_implications %}
+            <div class="triad-item">
+              <strong>Business implications:</strong> {{ item.business_implications }}
+            </div>
+            {% endif %}
             <div class="triad-item">
               <strong>What to watch:</strong> {{ item.what_to_watch }}
             </div>
