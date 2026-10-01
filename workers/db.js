@@ -199,11 +199,22 @@ export class D1Client {
 
     // 3. Insert developments and sources
     if (report.developments && Array.isArray(report.developments)) {
-      for (const dev of report.developments) {
-        const devId = dev.id || `dev_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      for (let devIdx = 0; devIdx < report.developments.length; devIdx++) {
+        const dev = report.developments[devIdx];
+        const rawDevId = dev.id || `dev_${devIdx}`;
+        // Ensure devId is globally unique to this report to avoid UNIQUE constraint collision across different reports/dates
+        const devId = rawDevId.startsWith(report.id) ? rawDevId : `${report.id}_${rawDevId}`;
         const devQuery = `
           INSERT INTO report_developments (id, report_id, headline, what_changed, why_it_matters, what_to_watch, topic_label, relevance_score)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            report_id = excluded.report_id,
+            headline = excluded.headline,
+            what_changed = excluded.what_changed,
+            why_it_matters = excluded.why_it_matters,
+            what_to_watch = excluded.what_to_watch,
+            topic_label = excluded.topic_label,
+            relevance_score = excluded.relevance_score;
         `;
         statements.push(
           this.db.prepare(devQuery).bind(
@@ -219,11 +230,19 @@ export class D1Client {
         );
 
         if (dev.sources && Array.isArray(dev.sources)) {
-          for (const s of dev.sources) {
-            const srcId = `src_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+          for (let sIdx = 0; sIdx < dev.sources.length; sIdx++) {
+            const s = dev.sources[sIdx];
+            const rawSrcId = s.id || `src_${sIdx}_${(s.article_id || Math.random().toString(36).substring(2, 6)).substring(0, 16)}`;
+            const srcId = rawSrcId.startsWith(devId) ? rawSrcId : `${devId}_${rawSrcId}`;
             const srcQuery = `
               INSERT INTO report_sources (id, development_id, article_id, source_name, title, url)
-              VALUES (?, ?, ?, ?, ?, ?);
+              VALUES (?, ?, ?, ?, ?, ?)
+              ON CONFLICT(id) DO UPDATE SET
+                development_id = excluded.development_id,
+                article_id = excluded.article_id,
+                source_name = excluded.source_name,
+                title = excluded.title,
+                url = excluded.url;
             `;
             statements.push(
               this.db.prepare(srcQuery).bind(

@@ -348,8 +348,12 @@ def build_daily_report_payload(
     ranked_developments: List[dict],
     total_articles_monitored: int,
 ) -> DailyReport:
-    """Build a validated DailyReport object from ranked developments."""
-    developments = [synthesize_triad_from_cluster(c, domain_name) for c in ranked_developments]
+    report_id = f"report_{report_date.replace('-', '')}_{domain_id}"
+    developments = []
+    for c in ranked_developments:
+        dev = synthesize_triad_from_cluster(c, domain_name)
+        dev.id = f"{report_id}_{dev.id}"
+        developments.append(dev)
     # Enforce 100% citation coverage: keep only developments with at least one verified source citation
     verified_developments = [d for d in developments if len(d.sources) > 0]
     final_developments = verified_developments if verified_developments else developments
